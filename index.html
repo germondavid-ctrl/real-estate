@@ -115,7 +115,12 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
     .badge-pinui { background:#ede9fe; color:#5b21b6; }
     .badge-ph    { background:#fce7f3; color:#9d174d; }
     .proj-count  { font-size:13px; color:#666; margin-bottom:14px; }
-</style>
+
+    .proj-card-contact { margin-top:8px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+    .proj-agent { font-size:12px; color:var(--muted); }
+    .proj-tel { font-size:12px; color:var(--blue); text-decoration:none; font-weight:600; }
+    .proj-tel:hover { text-decoration:underline; }
+  </style>
 </head>
 <body>
 <div class="header">
@@ -621,6 +626,10 @@ function renderProjets(city, btn) {
         <div class="proj-card-sub">${r.quartier} · ${pieces} · ${surf} · ${r.source||''}</div>
         <div>${projBadges(r)}</div>
         <div class="proj-card-note">${note}</div>
+        <div class="proj-card-contact">
+          <span class="proj-agent">👤 ${r.agent||'—'}</span>
+          ${r.telephone ? `<a class="proj-tel" href="tel:${r.telephone}">📞 ${r.telephone}</a>` : ''}
+        </div>
       </div>
     `;
   }).join('');
