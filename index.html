@@ -615,12 +615,12 @@ function renderProjets(city, btn) {
     return `
       <div class="proj-card">
         <div class="proj-card-head">
-          <div class="proj-card-addr">\${r.adresse}</div>
-          <div class="proj-card-prix">\${prix}</div>
+          <div class="proj-card-addr">${r.adresse}</div>
+          <div class="proj-card-prix">${prix}</div>
         </div>
-        <div class="proj-card-sub">\${r.quartier} · \${pieces} · \${surf} · \${r.source||''}</div>
-        <div>\${projBadges(r)}</div>
-        <div class="proj-card-note">\${note}</div>
+        <div class="proj-card-sub">${r.quartier} · ${pieces} · ${surf} · ${r.source||''}</div>
+        <div>${projBadges(r)}</div>
+        <div class="proj-card-note">${note}</div>
       </div>
     `;
   }).join('');
