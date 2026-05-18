@@ -120,6 +120,10 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
     .proj-agent { font-size:12px; color:var(--muted); }
     .proj-tel { font-size:12px; color:var(--blue); text-decoration:none; font-weight:600; }
     .proj-tel:hover { text-decoration:underline; }
+  
+    .proj-filters { margin: 10px 0 8px 0; }
+    .proj-q-select { padding:6px 12px; border:1px solid var(--border); border-radius:6px; background:var(--card); color:var(--text); font-size:13px; cursor:pointer; min-width:200px; }
+    .proj-q-select:focus { outline:none; border-color:var(--blue); }
   </style>
 </head>
 <body>
@@ -228,6 +232,11 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
       <button class="city-tab active" data-city="Tel Aviv" onclick="renderProjets('Tel Aviv',this)">Tel Aviv</button>
       <button class="city-tab" data-city="Jerusalem" onclick="renderProjets('Jerusalem',this)">Jérusalem</button>
       <button class="city-tab" data-city="Ra'anana" onclick="renderProjets(&quot;Ra'anana&quot;,this)">Ra'anana</button>
+    </div>
+    <div class="proj-filters">
+      <select id="proj-quartier-sel" class="proj-q-select" onchange="renderProjets(document.querySelector('#proj-city-tabs .city-tab.active')?.dataset.city||'Tel Aviv',null,this.value)">
+        <option value="">Tous les quartiers</option>
+      </select>
     </div>
     <div class="proj-count" id="proj-count"></div>
     <div class="proj-grid" id="proj-grid"></div>
@@ -598,17 +607,29 @@ function projBadges(r) {
   return b;
 }
 
-function renderProjets(city, btn) {
-  // update active button
-  document.querySelectorAll('.city-tab').forEach(b => b.classList.remove('active'));
+function renderProjets(city, btn, quartier) {
+  document.querySelectorAll('#proj-city-tabs .city-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
 
-  const recs = DATA.records.filter(r => r.ville === city && isProject(r));
-  document.getElementById('proj-count').textContent = recs.length + ' projet(s) trouvé(s)';
+  const allRecs = DATA.records.filter(r => r.ville === city && isProject(r));
+
+  // ── Menu déroulant quartiers ──
+  const quartiers = [...new Set(allRecs.map(r => r.quartier).filter(Boolean))].sort();
+  const sel = document.getElementById('proj-quartier-sel');
+  const currentQ = quartier || sel.value || '';
+  sel.innerHTML = '<option value="">Tous les quartiers</option>' +
+    quartiers.map(q => `<option value="${q}"${q===currentQ?' selected':''}>${q}</option>`).join('');
+  sel.onchange = () => renderProjets(city, null, sel.value);
+
+  // Filtre quartier
+  const recs = currentQ ? allRecs.filter(r => r.quartier === currentQ) : allRecs;
+
+  document.getElementById('proj-count').textContent =
+    recs.length + ' projet(s)' + (currentQ ? ' · ' + currentQ : '') + (allRecs.length !== recs.length ? ' / ' + allRecs.length + ' au total' : '');
 
   const grid = document.getElementById('proj-grid');
   if (!recs.length) {
-    grid.innerHTML = '<p style="color:#888">Aucun projet trouvé pour cette ville.</p>';
+    grid.innerHTML = '<p style="color:#888">Aucun projet dans ce quartier.</p>';
     return;
   }
 
