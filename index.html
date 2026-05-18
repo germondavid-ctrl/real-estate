@@ -193,12 +193,22 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
 
 <div class="panel" id="analyse">
   <div class="section">
-    <h2 style="margin-top:0">Comparatif TLV vs Jérusalem</h2>
-    <div class="compare">
-      <div><h3 class="tlv-h">Tel Aviv</h3><div id="tlvK"></div></div>
-      <div><h3 class="jeru-h">Jérusalem</h3><div id="jeruK"></div></div>
+    <h2 style="margin-top:0">Analyse de marché</h2>
+    <div class="analyse-nav">
+      <div class="city-tabs" id="an-city-tabs">
+        <button class="city-tab active" data-city="" onclick="renderAnalyse('',null,this)">Toutes</button>
+        <button class="city-tab" data-city="Tel Aviv" onclick="renderAnalyse('Tel Aviv',null,this)">Tel Aviv</button>
+        <button class="city-tab" data-city="Jerusalem" onclick="renderAnalyse('Jerusalem',null,this)">Jérusalem</button>
+        <button class="city-tab" data-city="Ra'anana" onclick="renderAnalyse(&quot;Ra'anana&quot;,null,this)">Ra'anana</button>
+        <button class="city-tab" data-city="Ramat Gan" onclick="renderAnalyse('Ramat Gan',null,this)">Ramat Gan</button>
+        <button class="city-tab" data-city="Kfar Saba" onclick="renderAnalyse('Kfar Saba',null,this)">Kfar Saba</button>
+      </div>
+      <div id="an-q-wrap" style="display:none;margin-top:8px">
+        <select id="an-quartier-sel" class="proj-q-select"><option value="">Tous les quartiers</option></select>
+      </div>
     </div>
-    <div style="font-size:12px; color:var(--muted); margin-top:8px;">Ventes uniquement avec prix/m² calculable. TLV : surface pondérée (bâti + 50% balcon). Jeru : surface bâtie pure.</div>
+    <div id="an-stats-card" style="margin-top:12px"></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">Ventes uniquement avec prix/m² calculable. TLV : surface pondérée (bâti + 50% balcon). Jeru : surface bâtie pure.</div>
   </div>
   <div class="section">
     <h2 style="margin-top:0">Prix/m² médian par quartier</h2>
@@ -515,76 +525,104 @@ document.querySelectorAll('thead th').forEach(th => th.addEventListener('click',
   el.addEventListener('change', applyFilters);
 });
 
-function renderAnalyse() {
-  function statsFor(vname) {
-    const sales = records.filter(r => r.ville === vname && r.type === 'Vente' && r.prix_m2_nis);
-    if (!sales.length) return '<div class="empty">Aucune donnée</div>';
-    const p = sales.map(r => r.prix_m2_nis).sort((a,b) => a-b);
-    const med = p[Math.floor(p.length/2)];
-    const p25 = p[Math.floor(p.length*0.25)];
-    const p75 = p[Math.floor(p.length*0.75)];
-    const mean = Math.round(p.reduce((s,x) => s+x, 0) / p.length);
-    return '<div style="font-size:12px"><strong>' + sales.length + '</strong> ventes calculables</div>' +
-      '<div style="font-size:24px;font-weight:600;color:var(--primary);margin:6px 0">' + med.toLocaleString('fr-FR') + ' <span style="font-size:13px;color:var(--muted)">₪/m² médiane</span></div>' +
-      '<div style="font-size:12px;color:var(--muted)">Moyenne ' + mean.toLocaleString('fr-FR') + ' - P25-P75 ' + p25.toLocaleString('fr-FR') + ' à ' + p75.toLocaleString('fr-FR') + '</div>' +
-      '<div style="font-size:12px;color:var(--muted)">Min ' + p[0].toLocaleString('fr-FR') + ' - Max ' + p[p.length-1].toLocaleString('fr-FR') + '</div>';
+function renderAnalyse(city, quartier, btn) {
+  city    = (city     === undefined || city    === null) ? '' : city;
+  quartier= (quartier === undefined || quartier=== null) ? '' : quartier;
+  if (btn) {
+    document.querySelectorAll('#an-city-tabs .city-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
   }
-  document.getElementById('tlvK').innerHTML = statsFor('Tel Aviv');
-  document.getElementById('jeruK').innerHTML = statsFor('Jerusalem');
-
-  const sales = records.filter(r => r.type === 'Vente' && r.prix_m2_nis);
-  const byQ2 = {};
-  sales.forEach(r => { if (r.quartier && r.quartier !== '-' && r.quartier !== '—') { const k = r.ville + '|' + r.quartier; (byQ2[k] = byQ2[k] || []).push(r.prix_m2_nis); } });
-  const stats = Object.entries(byQ2).filter(([k, a]) => a.length >= 2).map(([k, a]) => {
-    const [v, q] = k.split('|');
-    const s = [...a].sort((x,y) => x-y);
-    return { v, q, n: s.length, min: s[0], med: s[Math.floor(s.length/2)], max: s[s.length-1] };
-  }).sort((a,b) => b.med - a.med);
-  const maxMed = Math.max(...stats.map(s => s.med));
-  document.querySelector('#qStats tbody').innerHTML = stats.map(s => '<tr>' +
-    '<td><span class="' + (s.v === 'Tel Aviv' ? 'ville-tlv' : 'ville-jeru') + '">' + (s.v === 'Tel Aviv' ? 'TLV' : 'Jeru') + '</span></td>' +
-    '<td><strong>' + escapeHTML(s.q) + '</strong></td>' +
-    '<td class="center">' + s.n + '</td>' +
-    '<td class="right" style="font-weight:600;color:var(--primary)">' + s.med.toLocaleString('fr-FR') + '</td>' +
-    '<td class="right">' + s.min.toLocaleString('fr-FR') + '</td>' +
-    '<td class="right">' + s.max.toLocaleString('fr-FR') + '</td>' +
-    '<td><span class="bar" style="width:' + (s.med/maxMed*100).toFixed(1) + '%"></span></td>' +
-    '</tr>').join('');
-
-  const aU = [], aO = [];
-  Object.entries(byQ2).forEach(([k, a]) => {
-    if (a.length < 4) return;
-    const s = [...a].sort((x,y) => x-y);
-    const m = s[Math.floor(s.length/2)];
-    const [v, q] = k.split('|');
-    sales.filter(r => r.ville === v && r.quartier === q).forEach(r => {
-      const ec = (r.prix_m2_nis - m) / m;
-      if (ec < -0.25) aU.push({r, m, ec});
-      else if (ec > 0.25) aO.push({r, m, ec});
+  const selQ   = document.getElementById('an-quartier-sel');
+  const qWrap  = document.getElementById('an-q-wrap');
+  const salesC = records.filter(r => r.type==='Vente' && r.prix_m2_nis && (!city || r.ville===city));
+  if (city) {
+    qWrap.style.display = '';
+    const qList = [...new Set(salesC.map(r=>r.quartier).filter(Boolean))].sort();
+    const curQ  = quartier || selQ.value || '';
+    selQ.innerHTML = '<option value="">Tous les quartiers</option>' +
+      qList.map(q=>`<option value="${q}"${q===curQ?' selected':''}>${q}</option>`).join('');
+    selQ.onchange = () => {
+      const c = document.querySelector('#an-city-tabs .city-tab.active')?.dataset.city||'';
+      renderAnalyse(c, selQ.value, null);
+    };
+    quartier = curQ;
+  } else {
+    qWrap.style.display = 'none';
+    selQ.value = '';
+    quartier = '';
+  }
+  const sales = salesC.filter(r => !quartier || r.quartier===quartier);
+  const card  = document.getElementById('an-stats-card');
+  if (!sales.length) {
+    card.innerHTML = '<div class="empty">Aucune donnée pour cette sélection.</div>';
+  } else {
+    const p    = sales.map(r=>r.prix_m2_nis).sort((a,b)=>a-b);
+    const med  = p[Math.floor(p.length/2)];
+    const p25  = p[Math.floor(p.length*.25)];
+    const p75  = p[Math.floor(p.length*.75)];
+    const mean = Math.round(p.reduce((s,x)=>s+x,0)/p.length);
+    const lbl  = (city||'Toutes villes')+(quartier?' · '+quartier:'');
+    card.innerHTML =
+      `<div style="font-size:12px"><strong>${sales.length}</strong> ventes — <em>${lbl}</em></div>`+
+      `<div style="font-size:24px;font-weight:600;color:var(--primary);margin:6px 0">${med.toLocaleString('fr-FR')} <span style="font-size:13px;color:var(--muted)">₪/m² médiane</span></div>`+
+      `<div style="font-size:12px;color:var(--muted)">Moyenne ${mean.toLocaleString('fr-FR')} · P25–P75 ${p25.toLocaleString('fr-FR')} → ${p75.toLocaleString('fr-FR')}</div>`+
+      `<div style="font-size:12px;color:var(--muted)">Min ${p[0].toLocaleString('fr-FR')} · Max ${p[p.length-1].toLocaleString('fr-FR')}</div>`;
+  }
+  const byQ2={};
+  salesC.forEach(r=>{
+    if(r.quartier&&r.quartier!=='-'&&r.quartier!=='—'){
+      const k=r.ville+'|'+r.quartier;(byQ2[k]=byQ2[k]||[]).push(r.prix_m2_nis);
+    }
+  });
+  let stats=Object.entries(byQ2).filter(([,a])=>a.length>=2).map(([k,a])=>{
+    const[v,q]=k.split('|'),s=[...a].sort((x,y)=>x-y);
+    return{v,q,n:s.length,min:s[0],med:s[Math.floor(s.length/2)],max:s[s.length-1]};
+  });
+  if(quartier) stats=stats.filter(s=>s.q===quartier);
+  stats.sort((a,b)=>b.med-a.med);
+  const maxMed=Math.max(...stats.map(s=>s.med),1);
+  const vL=v=>v==='Tel Aviv'?'TLV':v==='Jerusalem'?'Jeru':v;
+  const vC=v=>v==='Tel Aviv'?'ville-tlv':'ville-jeru';
+  document.querySelector('#qStats tbody').innerHTML=stats.map(s=>
+    '<tr><td><span class="'+vC(s.v)+'">'+vL(s.v)+'</span></td>'+
+    '<td><strong>'+escapeHTML(s.q)+'</strong></td>'+
+    '<td class="center">'+s.n+'</td>'+
+    '<td class="right" style="font-weight:600;color:var(--primary)">'+s.med.toLocaleString('fr-FR')+'</td>'+
+    '<td class="right">'+s.min.toLocaleString('fr-FR')+'</td>'+
+    '<td class="right">'+s.max.toLocaleString('fr-FR')+'</td>'+
+    '<td><span class="bar" style="width:'+(s.med/maxMed*100).toFixed(1)+'%"></span></td></tr>'
+  ).join('');
+  const aU=[],aO=[],byQ3={};
+  sales.forEach(r=>{
+    if(r.quartier&&r.quartier!=='-'&&r.quartier!=='—'){
+      const k=r.ville+'|'+r.quartier;(byQ3[k]=byQ3[k]||[]).push(r.prix_m2_nis);
+    }
+  });
+  Object.entries(byQ3).forEach(([k,a])=>{
+    if(a.length<4)return;
+    const s=[...a].sort((x,y)=>x-y),m=s[Math.floor(s.length/2)],[v,q]=k.split('|');
+    sales.filter(r=>r.ville===v&&r.quartier===q).forEach(r=>{
+      const ec=(r.prix_m2_nis-m)/m;
+      if(ec<-.25)aU.push({r,m,ec});else if(ec>.25)aO.push({r,m,ec});
     });
   });
-  aU.sort((x,y) => x.ec - y.ec);
-  aO.sort((x,y) => y.ec - x.ec);
-  function ra(cls) {
-    return function(o) {
-      const r = o.r, m = o.m, ec = o.ec;
-      const c = cls === 'under' ? 'var(--green)' : 'var(--red)';
-      return '<div class="alert-row ' + cls + '">' +
-        '<span class="' + (r.ville === 'Tel Aviv' ? 'ville-tlv' : 'ville-jeru') + '">' + (r.ville === 'Tel Aviv' ? 'TLV' : 'Jeru') + '</span> ' +
-        '<strong>#' + r.id + '</strong> · ' + escapeHTML((r.adresse||'').split('\n')[0]) +
-        ' <span class="tag">' + escapeHTML(r.quartier) + '</span><span class="tag">' + (r.pieces||'-') + 'p</span><span class="tag">' + (r.surf_batie_m2||'-') + 'm²</span> ' +
-        '<strong style="color:' + c + '">' + r.prix_m2_nis.toLocaleString('fr-FR') + ' ₪/m²</strong> ' +
-        '<span style="color:' + c + ';font-size:11.5px">(' + (ec>0?'+':'') + (ec*100).toFixed(0) + '% vs méd. ' + m.toLocaleString('fr-FR') + ')</span>' +
-        '<div style="color:var(--muted);font-size:11.5px;margin-top:2px">' + escapeHTML(r.agent||'') + ' - ' + escapeHTML(r.telephone||'') + '</div>' +
-        '</div>';
-    };
-  }
-  document.getElementById('under').innerHTML = aU.length ? aU.slice(0,30).map(ra('under')).join('') : '<div class="empty">Aucun.</div>';
-  document.getElementById('over').innerHTML = aO.length ? aO.slice(0,30).map(ra('over')).join('') : '<div class="empty">Aucun.</div>';
+  aU.sort((x,y)=>x.ec-y.ec);aO.sort((x,y)=>y.ec-x.ec);
+  function ra(cls){return function(o){
+    const r=o.r,m=o.m,ec=o.ec,c=cls==='under'?'var(--green)':'var(--red)';
+    return '<div class="alert-row '+cls+'"><span class="'+vC(r.ville)+'">'+vL(r.ville)+'</span> '+
+      '<strong>#'+r.id+'</strong> · '+escapeHTML((r.adresse||'').split('\n')[0])+
+      ' <span class="tag">'+escapeHTML(r.quartier)+'</span><span class="tag">'+(r.pieces||'-')+'p</span><span class="tag">'+(r.surf_batie_m2||'-')+'m²</span> '+
+      '<strong style="color:'+c+'">'+r.prix_m2_nis.toLocaleString('fr-FR')+' ₪/m²</strong> '+
+      '<span style="color:'+c+';font-size:11.5px">'+(ec>0?'+':'')+(ec*100).toFixed(0)+'% vs méd. '+m.toLocaleString('fr-FR')+')</span>'+
+      '<div style="color:var(--muted);font-size:11.5px;margin-top:2px">'+escapeHTML(r.agent||'')+' - '+escapeHTML(r.telephone||'')+'</div></div>';
+  };}
+  document.getElementById('under').innerHTML=aU.length?aU.slice(0,30).map(ra('under')).join(''):'<div class="empty">Aucun.</div>';
+  document.getElementById('over').innerHTML =aO.length?aO.slice(0,30).map(ra('over')).join('') :'<div class="empty">Aucun.</div>';
 }
 
+
 applyFilters();
-renderAnalyse();
+renderAnalyse('',null,document.querySelector('#an-city-tabs .city-tab'));
 
 // ── PROJETS ──────────────────────────────────────────────────────
 function isProject(r) {
