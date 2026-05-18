@@ -124,7 +124,52 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
     .proj-filters { margin: 10px 0 8px 0; }
     .proj-q-select { padding:6px 12px; border:1px solid var(--border); border-radius:6px; background:var(--card); color:var(--text); font-size:13px; cursor:pointer; min-width:200px; }
     .proj-q-select:focus { outline:none; border-color:var(--blue); }
-  </style>
+  
+/* ── Registre foncier Jeru ── */
+.reg-wrap{margin-top:16px}
+.reg-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.reg-header h3{margin:0;font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.reg-controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.reg-controls select,.reg-controls label{font-size:12px}
+.reg-controls select{padding:2px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)}
+.reg-stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px;padding:8px 12px;background:var(--card);border-radius:8px;border:1px solid var(--border)}
+.reg-stat{font-size:12px;color:var(--muted)}
+.reg-stat strong{color:var(--text);font-size:14px}
+.reg-table-wrap{overflow-x:auto;max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:8px}
+.reg-table{width:100%;border-collapse:collapse;font-size:12px}
+.reg-table th{position:sticky;top:0;background:var(--bg);padding:6px 8px;text-align:left;font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+.reg-table th:hover{color:var(--primary)}
+.reg-table td{padding:5px 8px;border-bottom:1px solid var(--border);white-space:nowrap}
+.reg-table tr:last-child td{border-bottom:none}
+.reg-table tr:hover td{background:rgba(0,112,243,.04)}
+.reg-pm2{font-weight:600;color:var(--primary)}
+.reg-flag-lux{display:inline-block;font-size:9px;background:#f0c000;color:#5a3e00;border-radius:3px;padding:1px 4px;margin-left:4px;vertical-align:middle;font-weight:700}
+.reg-flag-mlm{display:inline-block;font-size:9px;background:#e0e0e0;color:#555;border-radius:3px;padding:1px 4px;margin-left:4px;vertical-align:middle}
+.reg-note{font-size:11px;color:var(--muted);margin-top:6px}
+
+
+/* ── Onglet Agents ── */
+.ag-search-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
+.ag-search-bar .f-group{min-width:180px;flex:1}
+.ag-count{font-size:12px;color:var(--muted);margin-bottom:10px}
+.ag-card{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.ag-card-header{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;transition:background .15s}
+.ag-card-header:hover{background:#f1f5f9}
+.ag-card-header .ag-name{font-weight:600;font-size:14px;flex:1}
+.ag-card-header .ag-tel{font-size:12.5px;color:var(--muted);font-family:monospace}
+.ag-card-header .ag-badges{display:flex;gap:5px;flex-wrap:wrap}
+.ag-card-header .ag-nb{background:var(--primary);color:white;border-radius:12px;padding:1px 9px;font-size:11.5px;font-weight:600}
+.ag-card-header .ag-chevron{font-size:11px;color:var(--muted);transition:transform .2s;margin-left:6px}
+.ag-card-header.open .ag-chevron{transform:rotate(180deg)}
+.ag-card-body{display:none;border-top:1px solid var(--border)}
+.ag-card-body.open{display:block}
+.ag-biens-table{width:100%;border-collapse:collapse;font-size:12px}
+.ag-biens-table th{background:#f8fafc;padding:6px 10px;text-align:left;font-weight:600;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+.ag-biens-table td{padding:7px 10px;border-top:1px solid #f1f5f9;vertical-align:middle}
+.ag-biens-table tr:hover td{background:#f8fafc}
+.ag-no-result{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+
+</style>
 </head>
 <body>
 <div class="header">
@@ -135,6 +180,7 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
   <div class="tab active" data-panel="search">Recherche</div>
   <div class="tab" data-panel="analyse">Analyse marché</div>
   <div class="tab" data-panel="projets">Projets</div>
+  <div class="tab" data-panel="agents">Agents</div>
 </div>
 
 <div class="panel active" id="search">
@@ -208,6 +254,7 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
       </div>
     </div>
     <div id="an-stats-card" style="margin-top:12px"></div>
+    <div id="an-jeru-registry" style="margin-top:16px"></div>
     <div style="font-size:12px;color:var(--muted);margin-top:8px">Ventes uniquement avec prix/m² calculable. TLV : surface pondérée (bâti + 50% balcon). Jeru : surface bâtie pure.</div>
   </div>
   <div class="section">
@@ -250,6 +297,32 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
     </div>
     <div class="proj-count" id="proj-count"></div>
     <div class="proj-grid" id="proj-grid"></div>
+  </div>
+</div>
+
+
+<div class="panel" id="agents">
+  <div class="section">
+    <h2 style="margin-top:0">Recherche par agent</h2>
+    <div class="ag-search-bar">
+      <div class="f-group">
+        <label>Ville</label>
+        <select id="ag-ville" onchange="renderAgents()">
+          <option value="">Toutes les villes</option>
+          <option value="Tel Aviv">Tel Aviv</option>
+          <option value="Jerusalem">Jérusalem</option>
+          <option value="Ra'anana">Ra'anana</option>
+          <option value="Ramat Gan">Ramat Gan</option>
+          <option value="Kfar Saba">Kfar Saba</option>
+        </select>
+      </div>
+      <div class="f-group" style="flex:2">
+        <label>Nom ou numéro de téléphone</label>
+        <input id="ag-q" type="search" placeholder="Ex: Cohen, 052…" oninput="renderAgents()">
+      </div>
+    </div>
+    <div class="ag-count" id="ag-count"></div>
+    <div id="ag-list"></div>
   </div>
 </div>
 
@@ -525,6 +598,271 @@ document.querySelectorAll('thead th').forEach(th => th.addEventListener('click',
   el.addEventListener('change', applyFilters);
 });
 
+
+
+// ── AGENTS ──────────────────────────────────────────────────────────────────
+function renderAgents() {
+  const ville = document.getElementById('ag-ville').value;
+  const q     = (document.getElementById('ag-q').value || '').toLowerCase().trim();
+
+  // Grouper par agent + téléphone
+  const map = {};
+  records.forEach(r => {
+    const nm = (r.agent     || '').trim();
+    const tl = (r.telephone || '').trim();
+    if (!nm && !tl) return;
+    if (ville && r.ville !== ville) return;
+    const key = nm + '§' + tl;
+    if (!map[key]) map[key] = {agent: nm||'—', tel: tl, biens: [], villes: new Set()};
+    map[key].biens.push(r);
+    map[key].villes.add(r.ville);
+  });
+
+  // Filtrer par query
+  let list = Object.values(map).filter(a => {
+    if (!q) return true;
+    return a.agent.toLowerCase().includes(q) || a.tel.replace(/\s/g,'').includes(q.replace(/\s/g,''));
+  });
+
+  // Trier : d'abord nb biens desc, puis nom
+  list.sort((a,b) => b.biens.length - a.biens.length || a.agent.localeCompare(b.agent));
+
+  const countEl = document.getElementById('ag-count');
+  const listEl  = document.getElementById('ag-list');
+  countEl.textContent = list.length
+    ? list.length + ' agent(s) · ' + list.reduce((s,a)=>s+a.biens.length,0) + ' bien(s)'
+    : '';
+
+  if (!list.length) {
+    listEl.innerHTML = '<div class="ag-no-result">Aucun agent trouvé pour cette sélection.</div>';
+    return;
+  }
+
+  const vL = v => v==='Tel Aviv'?'TLV':v==='Jerusalem'?'Jeru':v||'?';
+  const vC = v => v==='Tel Aviv'?'ville-tlv':v==='Jerusalem'?'ville-jeru':'ville-ra';
+  const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  listEl.innerHTML = list.map((a, idx) => {
+    const villeBadges = [...a.villes].map(v =>
+      `<span class="${vC(v)}">${vL(v)}</span>`).join(' ');
+    const rows = a.biens.map(r => {
+      const pm2c = r.prix_m2_nis
+        ? (r.prix_m2_nis > 35000 ? 'pm2 high' : r.prix_m2_nis < 20000 ? 'pm2 low' : 'pm2')
+        : '';
+      return `<tr>
+        <td><span class="${vC(r.ville)}">${vL(r.ville)}</span></td>
+        <td class="adresse"><div class="main">${esc((r.adresse||'').split('\n')[0])}</div>
+          <div class="desc">${esc(r.quartier||'')}${r.quartier&&(r.pieces||r.surf_batie_m2)?' · ':''}`
+        + (r.pieces?r.pieces+'p':'') + (r.pieces&&r.surf_batie_m2?' / ':'') + (r.surf_batie_m2?r.surf_batie_m2+'m²':'')
+        + `</div></td>
+        <td><span class="${r.type==='Vente'?'t-vente':'t-location'}">${esc(r.type||'')}</span></td>
+        <td class="price">${r.prix_nis ? r.prix_nis.toLocaleString('fr-FR')+' ₪' : '—'}</td>
+        <td class="${pm2c}">${r.prix_m2_nis ? r.prix_m2_nis.toLocaleString('fr-FR') : '—'}</td>
+        <td style="font-size:11px;color:var(--muted)">${esc(r.date_entree||'')}</td>
+      </tr>`;
+    }).join('');
+
+    return `<div class="ag-card">
+      <div class="ag-card-header" onclick="toggleAgent(this)" id="ag-hdr-${idx}">
+        <span class="ag-name">${esc(a.agent)}</span>
+        <span class="ag-tel">${esc(a.tel)}</span>
+        <div class="ag-badges">
+          ${villeBadges}
+          <span class="ag-nb">${a.biens.length} bien${a.biens.length>1?'s':''}</span>
+        </div>
+        <span class="ag-chevron">▼</span>
+      </div>
+      <div class="ag-card-body" id="ag-body-${idx}">
+        <table class="ag-biens-table">
+          <thead><tr>
+            <th>Ville</th><th>Adresse / Quartier</th><th>Type</th><th>Prix</th><th>₪/m²</th><th>Date</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAgent(hdr) {
+  hdr.classList.toggle('open');
+  const body = hdr.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ── REGISTRE FONCIER JÉRUSALEM (mars-mai 2026, source: רשות המיסים) ─────────
+const JERU_REGISTRY = [
+  {d:'05/2026',a:'(gush 30878-72)',q:'',p:2,s:59.1,pr:2190000,pm2:37073,flag:''},
+  {d:'05/2026',a:'(gush 28046-22)',q:'',p:3,s:40.5,pr:1800000,pm2:44444,flag:''},
+  {d:'04/2026',a:'הישועי 32',q:'',p:3,s:76,pr:3090000,pm2:40657,flag:''},
+  {d:'04/2026',a:'(gush 28046-22-28)',q:'',p:3,s:56,pr:1930000,pm2:34464,flag:''},
+  {d:'04/2026',a:'משה מנדל מסקלוב 4',q:'',p:4,s:93,pr:3000000,pm2:32258,flag:''},
+  {d:'04/2026',a:'(gush 50647-12-10)',q:'',p:3,s:63.7,pr:2150000,pm2:33752,flag:''},
+  {d:'04/2026',a:'המרדוף 7',q:'',p:4,s:80,pr:2475000,pm2:30938,flag:''},
+  {d:'04/2026',a:'קיסוף 3',q:'',p:3,s:56,pr:2050000,pm2:36607,flag:''},
+  {d:'04/2026',a:'חובב 216',q:'',p:3,s:62.4,pr:1950000,pm2:31250,flag:''},
+  {d:'04/2026',a:'(gush 30138-29-8)',q:'',p:4,s:65,pr:3180000,pm2:48923,flag:''},
+  {d:'04/2026',a:'(gush 30810-150)',q:'',p:5,s:148,pr:7380000,pm2:49865,flag:''},
+  {d:'04/2026',a:'(gush 30840-81-9)',q:'',p:4,s:101,pr:4587000,pm2:45416,flag:''},
+  {d:'04/2026',a:'אלון המדרי 14',q:'',p:3,s:60,pr:3532000,pm2:58867,flag:'lux'},
+  {d:'04/2026',a:'בנק הימים 1',q:'',p:2,s:67,pr:3940000,pm2:58806,flag:'lux'},
+  {d:'04/2026',a:'(gush 31997-17-27)',q:'',p:5,s:125.1,pr:3250000,pm2:25980,flag:''},
+  {d:'04/2026',a:'(gush 30212-40-1)',q:'',p:4,s:109,pr:3640000,pm2:33394,flag:''},
+  {d:'04/2026',a:'(gush 30010-15-17)',q:'',p:4,s:91,pr:6200000,pm2:68132,flag:'lux'},
+  {d:'04/2026',a:'(gush 30109-297)',q:'',p:3,s:73.2,pr:3100000,pm2:42350,flag:''},
+  {d:'04/2026',a:'(gush 30016-15-16)',q:'',p:4,s:91,pr:6200000,pm2:68132,flag:'lux'},
+  {d:'04/2026',a:'(gush 30002-93-18)',q:'',p:5,s:147,pr:8226000,pm2:55959,flag:'lux'},
+  {d:'04/2026',a:'גבעת שאול 32',q:'Givat Shaul',p:4,s:75,pr:2680000,pm2:35733,flag:''},
+  {d:'04/2026',a:'פנחס אורמן 2',q:'',p:3,s:70.7,pr:2300000,pm2:32531,flag:''},
+  {d:'04/2026',a:'קיסוף ריקה 120',q:'',p:3,s:51.5,pr:2095000,pm2:40680,flag:''},
+  {d:'04/2026',a:'בית לוח 164',q:'',p:4,s:106,pr:3949000,pm2:37255,flag:''},
+  {d:'04/2026',a:'(gush 30565-57-23)',q:'',p:5,s:114.7,pr:3210000,pm2:27985,flag:''},
+  {d:'04/2026',a:'אברהם כהלה 22',q:'',p:3,s:75,pr:1324000,pm2:17653,flag:'mlm'},
+  {d:'04/2026',a:'אברהם כהלה 24',q:'',p:3,s:75,pr:1320000,pm2:17600,flag:'mlm'},
+  {d:'04/2026',a:'משה הרסקביץ 155',q:'',p:3,s:61.9,pr:1850000,pm2:29886,flag:''},
+  {d:'04/2026',a:'גוסטב מאן 38',q:'',p:2,s:51.9,pr:2125000,pm2:40944,flag:''},
+  {d:'04/2026',a:'אריה אוחמאי 205',q:'',p:3,s:60.2,pr:1980000,pm2:32890,flag:''},
+  {d:'04/2026',a:'בנק הימים 1',q:'',p:5,s:143,pr:6549000,pm2:45797,flag:'lux'},
+  {d:'04/2026',a:'(gush 30565-67-8)',q:'',p:5,s:115,pr:3750000,pm2:32609,flag:''},
+  {d:'04/2026',a:'(gush 31397-56-10)',q:'',p:3,s:78,pr:2350000,pm2:30128,flag:''},
+  {d:'04/2026',a:'מוסה טל 17',q:'',p:2,s:47.3,pr:2120000,pm2:44820,flag:''},
+  {d:'04/2026',a:'אלכסנדר רוזנברג 13',q:'',p:3,s:60,pr:1830000,pm2:30500,flag:''},
+  {d:'04/2026',a:'ארץ חמד 104',q:'Etz Haim',p:5,s:96,pr:5815439,pm2:60577,flag:'lux'},
+  {d:'04/2026',a:'(gush 31397-56-2)',q:'',p:3,s:78,pr:2350000,pm2:30128,flag:''},
+  {d:'04/2026',a:'מגה 6',q:'Mamilla',p:6,s:210,pr:16800000,pm2:80000,flag:'lux'},
+  {d:'04/2026',a:'מגה 6',q:'Mamilla',p:6,s:210,pr:16800000,pm2:80000,flag:'lux'},
+  {d:'04/2026',a:'בר כוכבא 18',q:'',p:3,s:57.42,pr:2300000,pm2:40061,flag:''},
+  {d:'03/2026',a:'עמנואל חיסון 28',q:'',p:5,s:112.15,pr:2900000,pm2:25859,flag:''},
+  {d:'03/2026',a:'עמנואל חיסון 28',q:'',p:4,s:120.45,pr:2530000,pm2:21003,flag:''},
+  {d:'03/2026',a:'(gush 31509-2-49)',q:'',p:3,s:81,pr:1787000,pm2:22062,flag:''},
+  {d:'03/2026',a:'הרצל 116',q:'',p:2,s:70,pr:2600000,pm2:37143,flag:''},
+  {d:'03/2026',a:'(gush 30645-79-39)',q:'',p:5,s:119,pr:3511000,pm2:29504,flag:''},
+  {d:'03/2026',a:'בן עמי 21',q:'',p:3,s:73.04,pr:1700000,pm2:23275,flag:''},
+  {d:'03/2026',a:'חרב צדקיה 13',q:'',p:4,s:81.5,pr:2500000,pm2:30675,flag:''},
+  {d:'03/2026',a:'(gush 30063-186-8)',q:'',p:3,s:51.5,pr:2585000,pm2:50194,flag:'lux'},
+  {d:'03/2026',a:'שרון שמות 1',q:'',p:5,s:166,pr:5971000,pm2:35970,flag:''},
+  {d:'03/2026',a:'חובב 2',q:'',p:3,s:44,pr:2940000,pm2:66818,flag:'lux'},
+  {d:'03/2026',a:'(gush 30643-41-104)',q:'',p:5,s:108,pr:3170000,pm2:29352,flag:''},
+  {d:'03/2026',a:'(gush 31397-56-11)',q:'',p:5,s:118,pr:3190000,pm2:27034,flag:''},
+  {d:'03/2026',a:'אמציה 3',q:'Katamon',p:3,s:78,pr:5000000,pm2:64103,flag:'lux'},
+  {d:'03/2026',a:'(gush 30123-109)',q:'',p:4,s:107,pr:4921327,pm2:46022,flag:''},
+  {d:'03/2026',a:'(gush 30123-109)',q:'',p:4,s:107,pr:4929168,pm2:46066,flag:''},
+  {d:'03/2026',a:'(gush 30123-109)',q:'',p:4,s:107,pr:4947072,pm2:46234,flag:''},
+  {d:'03/2026',a:'(gush 30340-81-10)',q:'',p:5,s:121,pr:5262000,pm2:43488,flag:'lux'},
+  {d:'03/2026',a:'ארץ חמד 104',q:'Etz Haim',p:4,s:96,pr:5995066,pm2:62448,flag:'lux'},
+  {d:'03/2026',a:'אלנבום אריה 8',q:'',p:3,s:63.3,pr:2050000,pm2:32386,flag:''},
+  {d:'03/2026',a:'ארבעים עמרים 8',q:'',p:3.5,s:64.9,pr:2485000,pm2:38290,flag:''},
+  {d:'03/2026',a:'ברביה 14',q:'',p:2,s:66.1,pr:1860000,pm2:28139,flag:''},
+  {d:'03/2026',a:'מסר 243',q:'',p:3,s:64.8,pr:2120000,pm2:32716,flag:''},
+  {d:'03/2026',a:'(gush 28116-55-3)',q:'',p:3,s:75,pr:2628000,pm2:35040,flag:''},
+  {d:'03/2026',a:'יעקב אויר 9',q:'',p:3,s:67,pr:2170000,pm2:32388,flag:''},
+  {d:'03/2026',a:'חובב 2',q:'',p:4,s:44,pr:2940000,pm2:66818,flag:'lux'},
+  {d:'03/2026',a:'(gush 30107-291)',q:'',p:2,s:44,pr:3059000,pm2:69523,flag:'lux'},
+  {d:'03/2026',a:'עזריאל הלוי 15',q:'Rehavia',p:5,s:171,pr:13076700,pm2:76472,flag:'lux'},
+  {d:'03/2026',a:'(gush 30046-36-4)',q:'',p:2,s:51.2,pr:2700000,pm2:52734,flag:''},
+  {d:'03/2026',a:'אלקנה 10',q:'',p:3,s:38,pr:3400000,pm2:89474,flag:'lux'},
+  {d:'03/2026',a:'(gush 30092-1-40)',q:'',p:3,s:48.2,pr:2950000,pm2:61203,flag:'lux'},
+  {d:'03/2026',a:'הרצל 116',q:'',p:2,s:70,pr:2600000,pm2:37143,flag:''},
+  {d:'03/2026',a:'(gush 31397-56-12)',q:'',p:3,s:78,pr:2416000,pm2:30974,flag:''},
+  {d:'03/2026',a:'(gush 31397-56-8)',q:'',p:5,s:118,pr:3190000,pm2:27034,flag:''},
+  {d:'03/2026',a:'(gush 30864-5-180)',q:'',p:4,s:90,pr:4875000,pm2:54167,flag:'lux'},
+  {d:'03/2026',a:'(gush 30643-41-103)',q:'',p:5,s:108,pr:3170000,pm2:29352,flag:''},
+  {d:'03/2026',a:'(gush 30561-3-40)',q:'',p:3,s:57,pr:2196809,pm2:38541,flag:''},
+  {d:'03/2026',a:'(gush 30004-177)',q:'Katamon',p:3,s:78,pr:5000000,pm2:64103,flag:'lux'},
+];
+
+let _regSort = 'pm2';
+let _regAsc  = false;
+
+function renderJeruRegistry(city, showMlm) {
+  const wrap = document.getElementById('an-jeru-registry');
+  if (!wrap) return;
+  if (city !== 'Jerusalem') { wrap.innerHTML = ''; return; }
+
+  showMlm = (showMlm === undefined)
+    ? (document.getElementById('reg-mlm-toggle')?.checked || false)
+    : showMlm;
+
+  let data = showMlm ? JERU_REGISTRY : JERU_REGISTRY.filter(r => r.flag !== 'mlm');
+
+  // filtre pièces
+  const pF = document.getElementById('reg-pieces-sel')?.value || '';
+  if (pF) data = data.filter(r => String(r.p) === pF || (pF==='5+' && r.p>=5));
+
+  // tri
+  data = [...data].sort((a,b) => {
+    const v = _regSort==='pm2' ? a.pm2-b.pm2
+            : _regSort==='pr'  ? a.pr-b.pr
+            : _regSort==='s'   ? a.s-b.s
+            : _regSort==='p'   ? a.p-b.p
+            : 0;
+    return _regAsc ? v : -v;
+  });
+
+  const pm2s = data.map(r=>r.pm2).sort((a,b)=>a-b);
+  const med  = pm2s[Math.floor(pm2s.length/2)]||0;
+  const mean = Math.round(pm2s.reduce((s,x)=>s+x,0)/(pm2s.length||1));
+  const p25  = pm2s[Math.floor(pm2s.length*.25)]||0;
+  const p75  = pm2s[Math.floor(pm2s.length*.75)]||0;
+  const nonLux = data.filter(r=>r.flag!=='lux').map(r=>r.pm2).sort((a,b)=>a-b);
+  const medNL  = nonLux[Math.floor(nonLux.length/2)]||0;
+
+  const escH = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const thSort = (k,lbl) => {
+    const arr = (_regSort===k) ? (_regAsc?' ▲':' ▼') : '';
+    return `<th onclick="(function(){_regSort='${k}';_regAsc=_regSort==='${k}'?!_regAsc:false;renderJeruRegistry('Jerusalem');})()">${lbl}${arr}</th>`;
+  };
+
+  wrap.innerHTML = `
+<div class="reg-wrap">
+  <div class="reg-header">
+    <h3>Registre foncier — ${data.length} ventes récentes (mars–mai 2026)</h3>
+    <div class="reg-controls">
+      <select id="reg-pieces-sel" onchange="renderJeruRegistry('Jerusalem')">
+        <option value="">Toutes pièces</option>
+        <option value="2"${pF==='2'?' selected':''}>2 p.</option>
+        <option value="3"${pF==='3'?' selected':''}>3 p.</option>
+        <option value="4"${pF==='4'?' selected':''}>4 p.</option>
+        <option value="5+"${pF==='5+'?' selected':''}>5 p.+</option>
+      </select>
+      <label><input type="checkbox" id="reg-mlm-toggle"${showMlm?' checked':''} onchange="renderJeruRegistry('Jerusalem')"> Inclure מחיר למשתכן</label>
+    </div>
+  </div>
+  <div class="reg-stats">
+    <div class="reg-stat">Médiane <strong>${med.toLocaleString('fr-FR')} ₪/m²</strong></div>
+    <div class="reg-stat">Moyenne <strong>${mean.toLocaleString('fr-FR')} ₪/m²</strong></div>
+    <div class="reg-stat">P25→P75 <strong>${p25.toLocaleString('fr-FR')} → ${p75.toLocaleString('fr-FR')}</strong></div>
+    <div class="reg-stat">Médiane hors luxe <strong>${medNL.toLocaleString('fr-FR')} ₪/m²</strong></div>
+  </div>
+  <div class="reg-table-wrap">
+    <table class="reg-table">
+      <thead><tr>
+        <th>Date</th>
+        <th>Adresse</th>
+        <th>Quartier</th>
+        ${thSort('p','Pcs')}
+        ${thSort('s','m²')}
+        ${thSort('pr','Prix ₪')}
+        ${thSort('pm2','₪/m²')}
+      </tr></thead>
+      <tbody>
+        ${data.map(r=>`<tr>
+          <td>${escH(r.d)}</td>
+          <td dir="rtl">${escH(r.a)}${r.flag==='lux'?'<span class="reg-flag-lux">LUXE</span>':r.flag==='mlm'?'<span class="reg-flag-mlm">מחיר למשתכן</span>':''}</td>
+          <td>${escH(r.q||'—')}</td>
+          <td>${r.p}</td>
+          <td>${r.s}</td>
+          <td>${r.pr.toLocaleString('fr-FR')}</td>
+          <td class="reg-pm2">${r.pm2.toLocaleString('fr-FR')}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+  <div class="reg-note">Source : רשות המיסים (registre des transactions) · Cliquer sur les en-têtes pour trier · Les entrées « מחיר למשתכן » sont à prix administré, non représentatives du marché libre.</div>
+</div>`;
+}
+
 function renderAnalyse(city, quartier, btn) {
   city    = (city     === undefined || city    === null) ? '' : city;
   quartier= (quartier === undefined || quartier=== null) ? '' : quartier;
@@ -616,12 +954,14 @@ function renderAnalyse(city, quartier, btn) {
       '<span style="color:'+c+';font-size:11.5px">'+(ec>0?'+':'')+(ec*100).toFixed(0)+'% vs méd. '+m.toLocaleString('fr-FR')+')</span>'+
       '<div style="color:var(--muted);font-size:11.5px;margin-top:2px">'+escapeHTML(r.agent||'')+' - '+escapeHTML(r.telephone||'')+'</div></div>';
   };}
+  renderJeruRegistry(city);
   document.getElementById('under').innerHTML=aU.length?aU.slice(0,30).map(ra('under')).join(''):'<div class="empty">Aucun.</div>';
   document.getElementById('over').innerHTML =aO.length?aO.slice(0,30).map(ra('over')).join('') :'<div class="empty">Aucun.</div>';
 }
 
 
 applyFilters();
+renderAgents();
 renderAnalyse('',null,document.querySelector('#an-city-tabs .city-tab'));
 
 // ── PROJETS ──────────────────────────────────────────────────────
