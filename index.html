@@ -169,6 +169,25 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
 .ag-biens-table tr:hover td{background:#f8fafc}
 .ag-no-result{text-align:center;padding:32px;color:var(--muted);font-size:13px}
 
+
+/* ── Nouveautés ── */
+.nouv-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+.nouv-bar .f-group{min-width:160px;flex:1}
+.nouv-count{font-size:12px;color:var(--muted);margin-bottom:10px}
+.nouv-group{margin-bottom:18px}
+.nouv-date-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.nouv-card{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #f1f5f9;flex-wrap:wrap}
+.nouv-card:last-child{border-bottom:none}
+.nouv-ville{flex-shrink:0}
+.nouv-info{flex:1;min-width:180px}
+.nouv-adresse{font-weight:600;font-size:13px}
+.nouv-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.nouv-price{font-weight:600;color:var(--primary);font-size:13px;white-space:nowrap}
+.nouv-pm2{font-size:11px;color:var(--muted)}
+.nouv-agent{font-size:11px;color:var(--muted);margin-top:2px}
+.nouv-flags{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.nouv-empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+
 </style>
 </head>
 <body>
@@ -181,6 +200,7 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
   <div class="tab" data-panel="analyse">Analyse marché</div>
   <div class="tab" data-panel="projets">Projets</div>
   <div class="tab" data-panel="agents">Agents</div>
+  <div class="tab" data-panel="nouveautes">Nouveautés</div>
 </div>
 
 <div class="panel active" id="search">
@@ -323,6 +343,45 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
     </div>
     <div class="ag-count" id="ag-count"></div>
     <div id="ag-list"></div>
+  </div>
+</div>
+
+
+<div class="panel" id="nouveautes">
+  <div class="section">
+    <h2 style="margin-top:0">Nouveautés — dernières publications</h2>
+    <div class="nouv-bar">
+      <div class="f-group">
+        <label>Ville</label>
+        <select id="nouv-ville" onchange="renderNouveautes()">
+          <option value="">Toutes les villes</option>
+          <option value="Tel Aviv">Tel Aviv</option>
+          <option value="Jerusalem">Jérusalem</option>
+          <option value="Ra'anana">Ra'anana</option>
+          <option value="Ramat Gan">Ramat Gan</option>
+          <option value="Kfar Saba">Kfar Saba</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label>Période</label>
+        <select id="nouv-period" onchange="renderNouveautes()">
+          <option value="7">7 derniers jours</option>
+          <option value="14">14 derniers jours</option>
+          <option value="30" selected>30 derniers jours</option>
+          <option value="0">Tout</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label>Type</label>
+        <select id="nouv-type" onchange="renderNouveautes()">
+          <option value="">Tous</option>
+          <option value="Vente">Vente</option>
+          <option value="Location">Location</option>
+        </select>
+      </div>
+    </div>
+    <div class="nouv-count" id="nouv-count"></div>
+    <div id="nouv-list"></div>
   </div>
 </div>
 
@@ -599,6 +658,99 @@ document.querySelectorAll('thead th').forEach(th => th.addEventListener('click',
 });
 
 
+
+
+// ── NOUVEAUTÉS ───────────────────────────────────────────────────────────────
+function renderNouveautes() {
+  const ville  = document.getElementById('nouv-ville').value;
+  const period = parseInt(document.getElementById('nouv-period').value);
+  const type   = document.getElementById('nouv-type').value;
+
+  const now    = new Date();
+  const cutoff = period > 0 ? new Date(now - period * 864e5) : null;
+
+  let recs = records.filter(r => {
+    if (ville && r.ville !== ville) return false;
+    if (type  && r.type  !== type)  return false;
+    if (cutoff && r.date_source) {
+      if (new Date(r.date_source) < cutoff) return false;
+    }
+    return true;
+  });
+
+  // Trier par date desc
+  recs = [...recs].sort((a,b) => {
+    const da = a.date_source || '', db = b.date_source || '';
+    return db.localeCompare(da) || a.adresse.localeCompare(b.adresse);
+  });
+
+  const countEl = document.getElementById('nouv-count');
+  const listEl  = document.getElementById('nouv-list');
+  countEl.textContent = recs.length
+    ? recs.length + ' bien(s) · ' + (ville||'toutes villes')
+    : '';
+
+  if (!recs.length) {
+    listEl.innerHTML = '<div class="nouv-empty">Aucun bien publié sur cette période.</div>';
+    return;
+  }
+
+  const vL = v => v==='Tel Aviv'?'TLV':v==='Jerusalem'?'Jeru':v||'?';
+  const vC = v => v==='Tel Aviv'?'ville-tlv':v==='Jerusalem'?'ville-jeru':'ville-ra';
+  const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Grouper par date
+  const byDate = {};
+  recs.forEach(r => {
+    const d = r.date_source || 'Date inconnue';
+    (byDate[d] = byDate[d]||[]).push(r);
+  });
+
+  const formatDate = d => {
+    if (!d || d==='Date inconnue') return d;
+    const [y,m,j] = d.split('-');
+    const mois = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+    return `${parseInt(j)} ${mois[parseInt(m)-1]} ${y}`;
+  };
+
+  listEl.innerHTML = Object.keys(byDate).sort((a,b)=>b.localeCompare(a)).map(date => {
+    const items = byDate[date];
+    const cards = items.map(r => {
+      const pm2Str  = r.prix_m2_nis ? r.prix_m2_nis.toLocaleString('fr-FR')+' ₪/m²' : '';
+      const prixStr = r.prix_nis    ? r.prix_nis.toLocaleString('fr-FR')+' ₪' : '—';
+      const dim = [r.pieces ? r.pieces+'p' : null,
+                   r.surf_batie_m2 ? r.surf_batie_m2+'m²' : null,
+                   r.balcon_jardin_m2 ? '+'+r.balcon_jardin_m2+'m² balcon' : null,
+                   r.etage ? 'K'+r.etage : null]
+                  .filter(Boolean).join(' · ');
+      const flagsHtml = [
+        r.is_penthouse ? '<span class="flag new">PH</span>' : '',
+        r.has_garden   ? '<span class="flag under">Jardin</span>' : '',
+        r.has_mamad    ? '<span class="flag mamad">Mamad</span>' : '',
+        r.has_baisse   ? '<span class="flag baisse">Baisse</span>' : '',
+      ].filter(Boolean).join('');
+
+      return `<div class="nouv-card">
+        <div class="nouv-ville"><span class="${vC(r.ville)}">${vL(r.ville)}</span></div>
+        <div class="nouv-info">
+          <div class="nouv-adresse">${esc((r.adresse||'').split('\n')[0])}</div>
+          <div class="nouv-sub">${esc(r.quartier||'')}${r.quartier&&dim?' · ':''} ${esc(dim)}</div>
+          ${flagsHtml ? '<div class="nouv-flags">'+flagsHtml+'</div>' : ''}
+          ${r.agent ? '<div class="nouv-agent">'+esc(r.agent)+(r.telephone?' — '+esc(r.telephone):'')+'</div>' : ''}
+        </div>
+        <div>
+          <div class="nouv-price">${prixStr}</div>
+          ${pm2Str ? '<div class="nouv-pm2">'+pm2Str+'</div>' : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="nouv-group">
+      <div class="nouv-date-label">📅 ${formatDate(date)} — ${items.length} bien${items.length>1?'s':''}</div>
+      ${cards}
+    </div>`;
+  }).join('');
+}
 
 // ── AGENTS ──────────────────────────────────────────────────────────────────
 function renderAgents() {
@@ -962,6 +1114,7 @@ function renderAnalyse(city, quartier, btn) {
 
 applyFilters();
 renderAgents();
+renderNouveautes();
 renderAnalyse('',null,document.querySelector('#an-city-tabs .city-tab'));
 
 // ── PROJETS ──────────────────────────────────────────────────────
