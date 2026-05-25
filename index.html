@@ -365,6 +365,8 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
       <div class="f-group">
         <label>Période</label>
         <select id="nouv-period" onchange="renderNouveautes()">
+          <option value="today">Aujourd'hui</option>
+          <option value="3">3 derniers jours</option>
           <option value="7">7 derniers jours</option>
           <option value="14">14 derniers jours</option>
           <option value="30" selected>30 derniers jours</option>
@@ -661,33 +663,56 @@ document.querySelectorAll('thead th').forEach(th => th.addEventListener('click',
 
 
 // ── NOUVEAUTÉS ───────────────────────────────────────────────────────────────
+// Parse DD/MM/YYYY ou YYYY-MM-DD
+function parseNDate(s) {
+  if (!s) return null;
+  const m1 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m1) return new Date(+m1[3], +m1[2]-1, +m1[1]);
+  const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m2) return new Date(+m2[1], +m2[2]-1, +m2[3]);
+  return null;
+}
 function renderNouveautes() {
   const ville  = document.getElementById('nouv-ville').value;
-  const period = parseInt(document.getElementById('nouv-period').value);
+  const period = document.getElementById('nouv-period').value;
   const type   = document.getElementById('nouv-type').value;
 
-  const now    = new Date();
-  const cutoff = period > 0 ? new Date(now - period * 864e5) : null;
+  const now     = new Date();
+  const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+  let cutoff = null;
+  if (period === 'today') {
+    cutoff = todayMs;
+  } else if (period !== '0') {
+    const days = parseInt(period);
+    if (days > 0) cutoff = todayMs - (days - 1) * 864e5;
+  }
 
   let recs = records.filter(r => {
     if (ville && r.ville !== ville) return false;
     if (type  && r.type  !== type)  return false;
-    if (cutoff && r.date_source) {
-      if (new Date(r.date_source) < cutoff) return false;
+    if (cutoff !== null && r.date_source) {
+      const d = parseNDate(r.date_source);
+      if (d && d.getTime() < cutoff) return false;
     }
     return true;
   });
 
-  // Trier par date desc
+  // Trier par date desc (robuste DD/MM/YYYY et YYYY-MM-DD)
   recs = [...recs].sort((a,b) => {
-    const da = a.date_source || '', db = b.date_source || '';
-    return db.localeCompare(da) || a.adresse.localeCompare(b.adresse);
+    const da = parseNDate(a.date_source), db = parseNDate(b.date_source);
+    const ta = da ? da.getTime() : 0, tb = db ? db.getTime() : 0;
+    return tb - ta || (a.adresse||'').localeCompare(b.adresse||'');
   });
 
   const countEl = document.getElementById('nouv-count');
   const listEl  = document.getElementById('nouv-list');
+  const periodLabel = period==='today' ? "aujourd'hui"
+                    : period==='3'     ? '3 derniers jours'
+                    : period==='0'     ? 'toutes dates'
+                    : period + ' derniers jours';
   countEl.textContent = recs.length
-    ? recs.length + ' bien(s) · ' + (ville||'toutes villes')
+    ? recs.length + ' bien(s) · ' + (ville||'toutes villes') + ' · ' + periodLabel
     : '';
 
   if (!recs.length) {
@@ -708,9 +733,14 @@ function renderNouveautes() {
 
   const formatDate = d => {
     if (!d || d==='Date inconnue') return d;
-    const [y,m,j] = d.split('-');
+    const pd = parseNDate(d);
+    if (!pd) return d;
     const mois = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
-    return `${parseInt(j)} ${mois[parseInt(m)-1]} ${y}`;
+    const t0   = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const pd0  = new Date(pd.getFullYear(), pd.getMonth(), pd.getDate()).getTime();
+    const diff = Math.round((t0 - pd0) / 864e5);
+    const badge = diff === 0 ? ' ✶ Aujourd\'hui' : diff === 1 ? ' · Hier' : diff <= 3 ? ` · Il y a ${diff}j` : '';
+    return `${pd.getDate()} ${mois[pd.getMonth()]} ${pd.getFullYear()}${badge}`;
   };
 
   listEl.innerHTML = Object.keys(byDate).sort((a,b)=>b.localeCompare(a)).map(date => {
