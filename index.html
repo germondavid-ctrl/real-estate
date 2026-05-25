@@ -508,7 +508,7 @@ function applyFilters() {
     if (f.type === 'Penthouse') { if (!r.is_penthouse) return false; }
     else if (f.type === 'Jardin') { if (!r.has_garden) return false; }
     else if (f.type === 'Mamad') { if (!isMamad(r)) return false; }
-    else if (f.type && r.type !== f.type) return false;
+    else if (f.type && !r.type.startsWith(f.type)) return false;
     if (f.quartier.length && !f.quartier.includes(r.quartier)) return false;
     if (f.pieces.length && !f.pieces.includes(String(r.pieces))) return false;
     if (f.pmin && (r.prix_nis ?? 0) < f.pmin) return false;
@@ -690,7 +690,7 @@ function renderNouveautes() {
 
   let recs = records.filter(r => {
     if (ville && r.ville !== ville) return false;
-    if (type  && r.type  !== type)  return false;
+    if (type  && !r.type.startsWith(type)) return false;
     if (cutoff !== null && r.date_source) {
       const d = parseNDate(r.date_source);
       if (d && d.getTime() < cutoff) return false;
