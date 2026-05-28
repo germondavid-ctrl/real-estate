@@ -204,8 +204,8 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
 <div class="header" style="position:relative">
   <h1>David Germon Real Estate — Moteur Tel Aviv + Jérusalem</h1>
     <div class="lang-toggle">
-    <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
-    <button class="lang-btn" id="btn-he" onclick="setLang('he')">עב</button>
+    <button class="lang-btn active" id="btn-fr">FR</button>
+    <button class="lang-btn" id="btn-he">עב</button>
   </div>
   <div class="sub">1 110 biens (TLV : 676 · Jérusalem : 376 · Ra'anana : 47 · Ramat Gan : 10 · Kfar Saba : 1) — MAJ 27/05/2026</div>
 </div>
@@ -690,7 +690,7 @@ function render() {
       '<td><div class="agent">' + escapeHTML(r.agent||'') + '</div><div class="tel">' + escapeHTML(r.telephone||'') + '</div><div style="margin-top:4px">' + buildContactBtns(r) + '</div></td>' +
       '</tr>';
   }).join('');
-  document.getElementById('count').textContent = filtered.length + ' / ' + records.length + ' ' + t('count.biens');
+  document.getElementById('count').textContent = filtered.length + ' / ' + records.length + ' ' + tr('count.biens');
   document.querySelectorAll('thead th').forEach(th => {
     th.classList.toggle('sorted', th.dataset.k === sortKey);
     th.classList.toggle('asc', sortAsc);
@@ -703,7 +703,7 @@ function renderKPIs() {
   const tlvN = filtered.filter(r => r.ville === 'Tel Aviv').length;
   const jeruN = filtered.filter(r => r.ville === 'Jerusalem').length;
   document.getElementById('kpis').innerHTML =
-    '<div class="kpi"><div class="label">' + t('kpi.affich') + '</div><div class="value">' + filtered.length + '</div><div class="sub">' + t('kpi.sur') + ' ' + records.length + '</div></div>' +
+    '<div class="kpi"><div class="label">' + tr('kpi.affich') + '</div><div class="value">' + filtered.length + '</div><div class="sub">' + tr('kpi.sur') + ' ' + records.length + '</div></div>' +
     '<div class="kpi"><div class="label">Tel Aviv</div><div class="value" style="color:var(--tlv)">' + tlvN + '</div></div>' +
     '<div class="kpi"><div class="label">Jérusalem</div><div class="value" style="color:var(--jeru)">' + jeruN + '</div></div>' +
     '<div class="kpi"><div class="label">Médiane ₪/m²</div><div class="value">' + (m ? m.toLocaleString('fr-FR') : '-') + '</div></div>';
@@ -1311,20 +1311,15 @@ document.querySelectorAll('.tab').forEach(t => {
 
 
 
-// ═══════════════════════════════════════════════════════
-//  I18N — Traductions FR / HE
-// ═══════════════════════════════════════════════════════
-const LANG_STORE_KEY = 'dg_lang';
-let currentLang = (() => { try { return localStorage.getItem(LANG_STORE_KEY)||'fr'; } catch(e){ return 'fr'; } })();
-
-const T = {
+// ════════════════════════════════════════════════
+//  I18N v3 — FR / HE (addEventListener)
+// ════════════════════════════════════════════════
+const I18N = {
   fr: {
-    'tab.search':'Recherche','tab.analyse':'Analyse marché','tab.projets':'Projets',
-    'tab.agents':'Agents','tab.nouv':'Nouveautés',
-    'lbl.ville':'Ville','lbl.search':'Recherche libre','lbl.type':'Type',
-    'lbl.quartier':'Quartier','lbl.pieces':'Pièces','lbl.prix':'Budget (₪)',
-    'lbl.prixm2':'Prix/m² (₪)','lbl.surf':'Surface (m²)','lbl.equip':'Équipements',
-    'lbl.alertes':'Alertes','lbl.agent_q':'Nom ou numéro de téléphone','lbl.periode':'Période',
+    'tab.search':'Recherche','tab.analyse':'Analyse marché','tab.projets':'Projets','tab.agents':'Agents','tab.nouv':'Nouveautés',
+    'lbl.ville':'Ville','lbl.search':'Recherche libre','lbl.type':'Type','lbl.quartier':'Quartier','lbl.pieces':'Pièces',
+    'lbl.prix':'Budget (₪)','lbl.prixm2':'Prix/m² (₪)','lbl.surf':'Surface (m²)','lbl.equip':'Équipements','lbl.alertes':'Alertes',
+    'lbl.agent_q':'Nom ou numéro de téléphone','lbl.periode':'Période',
     'opt.tous':'Tous','opt.vente':'Vente','opt.loc':'Location','opt.ph':'Penthouse',
     'opt.jardin':'Avec jardin','opt.mamad':'Avec mamad','opt.vmer':'Vue mer',
     'btn.reset':'Réinitialiser','btn.csv':'Exporter CSV',
@@ -1333,123 +1328,79 @@ const T = {
     'h2.analyse':'Analyse de marché','h2.projets':'Projets neufs & développement',
     'h2.agents':'Recherche par agent','h2.nouv':'Nouveautés — dernières publications',
     'ph.q':'Adresse, agent, mots-clés...','ph.agent':'Ex: Cohen, 052…',
-    'kpi.affich':'Affichés','kpi.sur':'sur','kpi.med':'Médiane Prix/m²','kpi.tlv':'Tel Aviv','kpi.jeru':'Jérusalem',
-    'multi.tous':'Tous','multi.toutes':'Toutes','multi.tout_q':'Tous quartiers',
-    'equip.ascenseur':'Ascenseur','equip.parking':'Parking','equip.balcon':'Balcon',
-    'equip.mahsan':'Mahsan','equip.mamad':'Mamad',
-    'nouv.tous':'Toutes les villes','period.today':"Aujourd'hui",
-    'period.3':'3 derniers jours','period.7':'7 derniers jours','period.30':'30 derniers jours',
-    'alert.none':'Aucune','alert.under':'Sous-évalués (-25% médiane)','alert.over':'Sur-évalués (+25%)',
-    'alert.baisse':'Baisses de prix',
-    'count.sur':'sur','count.biens':'biens',
-    'dir':'ltr',
+    'multi.quartier':'Tous','multi.pieces':'Toutes','multi.equip':'Tous',
+    'equip.ascenseur':'Ascenseur','equip.parking':'Parking','equip.balcon':'Balcon','equip.mahsan':'Mahsan','equip.mamad':'Mamad',
+    'ville.toutes':'Toutes les villes',
+    'period.today':"Aujourd'hui",'period.3':'3 derniers jours','period.7':'7 derniers jours','period.30':'30 derniers jours',
+    'alert.none':'Aucune','alert.under':'Sous-évalués (-25% médiane)','alert.over':'Sur-évalués (+25%)','alert.baisse':'Baisses de prix',
+    'count.biens':'biens','dir':'ltr'
   },
   he: {
-    'tab.search':'חיפוש','tab.analyse':'ניתוח שוק','tab.projets':'פרויקטים',
-    'tab.agents':'סוכנים','tab.nouv':'חדשות',
-    'lbl.ville':'עיר','lbl.search':'חיפוש חופשי','lbl.type':'סוג',
-    'lbl.quartier':'שכונה','lbl.pieces':'חדרים','lbl.prix':'תקציב (₪)',
-    'lbl.prixm2':'מחיר/מ"ר (₪)','lbl.surf':'שטח (מ"ר)','lbl.equip':'מאפיינים',
-    'lbl.alertes':'התראות','lbl.agent_q':'שם או מספר טלפון','lbl.periode':'תקופה',
+    'tab.search':'חיפוש','tab.analyse':'ניתוח שוק','tab.projets':'פרויקטים','tab.agents':'סוכנים','tab.nouv':'חדשות',
+    'lbl.ville':'עיר','lbl.search':'חיפוש חופשי','lbl.type':'סוג','lbl.quartier':'שכונה','lbl.pieces':'חדרים',
+    'lbl.prix':'תקציב (₪)','lbl.prixm2':'מחיר/מ"ר (₪)','lbl.surf':'שטח (מ"ר)','lbl.equip':'מאפיינים','lbl.alertes':'התראות',
+    'lbl.agent_q':'שם או מספר טלפון','lbl.periode':'תקופה',
     'opt.tous':'הכל','opt.vente':'מכירה','opt.loc':'השכרה','opt.ph':'פנטהאוס',
     'opt.jardin':'עם גינה','opt.mamad':'עם ממ"ד','opt.vmer':'נוף לים',
     'btn.reset':'איפוס','btn.csv':'ייצוא CSV',
     'th.ville':'עיר','th.type':'סוג','th.adresse':'כתובת','th.quartier':'שכונה',
-    'th.pieces':'חד\'','th.surf':'שטח','th.prix':'מחיר','th.prixm2':'מחיר/מ"ר','th.agent':'סוכן / קשר',
+    'th.pieces':"חד'",'th.surf':'שטח','th.prix':'מחיר','th.prixm2':'מחיר/מ"ר','th.agent':'סוכן / קשר',
     'h2.analyse':'ניתוח שוק','h2.projets':'פרויקטים חדשים ופיתוח',
     'h2.agents':'חיפוש לפי סוכן','h2.nouv':'חדשות — פרסומים אחרונים',
     'ph.q':'כתובת, סוכן, מילות מפתח...','ph.agent':'למשל: כהן, 052…',
-    'kpi.affich':'מוצגים','kpi.sur':'מתוך','kpi.med':'חציון מחיר/מ"ר','kpi.tlv':'תל אביב','kpi.jeru':'ירושלים',
-    'multi.tous':'הכל','multi.toutes':'הכל','multi.tout_q':'כל השכונות',
-    'equip.ascenseur':'מעלית','equip.parking':'חניה','equip.balcon':'מרפסת',
-    'equip.mahsan':'מחסן','equip.mamad':'ממ"ד',
-    'nouv.tous':'כל הערים','period.today':'היום',
-    'period.3':'3 ימים אחרונים','period.7':'7 ימים אחרונים','period.30':'30 ימים אחרונים',
-    'alert.none':'ללא','alert.under':'מתחת לשוק (−25% חציון)','alert.over':'מעל שוק (+25%)',
-    'alert.baisse':'ירידות מחיר',
-    'count.sur':'מתוך','count.biens':'נכסים',
-    'dir':'rtl',
+    'multi.quartier':'כל השכונות','multi.pieces':'הכל','multi.equip':'הכל',
+    'equip.ascenseur':'מעלית','equip.parking':'חניה','equip.balcon':'מרפסת','equip.mahsan':'מחסן','equip.mamad':'ממ"ד',
+    'ville.toutes':'כל הערים',
+    'period.today':'היום','period.3':'3 ימים אחרונים','period.7':'7 ימים אחרונים','period.30':'30 ימים אחרונים',
+    'alert.none':'ללא','alert.under':'מתחת לשוק (−25% חציון)','alert.over':'מעל שוק (+25%)','alert.baisse':'ירידות מחיר',
+    'count.biens':'נכסים','dir':'rtl'
   }
 };
+let i18nLang = 'fr';
+function tr(k){ return (I18N[i18nLang]||{})[k] || (I18N.fr||{})[k] || k; }
 
-function t(key) { return (T[currentLang] && T[currentLang][key]) || (T['fr'][key]) || key; }
-
-function applyI18n() {
-  const lang = currentLang;
-  document.documentElement.dir = T[lang]['dir'];
-  document.documentElement.lang = lang === 'he' ? 'he' : 'fr';
-  // Textes statiques
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const k = el.dataset.i18n;
-    if (T[lang][k]) el.textContent = T[lang][k];
+function applyLang(lang) {
+  i18nLang = lang;
+  var L = I18N[lang] || I18N.fr;
+  document.documentElement.setAttribute('dir', L.dir||'ltr');
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k=el.getAttribute('data-i18n'); if(L[k]!==undefined) el.textContent=L[k];
   });
-  // Placeholders
-  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    const k = el.dataset.i18nPh;
-    if (T[lang][k]) el.placeholder = T[lang][k];
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+    var k=el.getAttribute('data-i18n-ph'); if(L[k]!==undefined) el.setAttribute('placeholder',L[k]);
   });
-  // Options select f-type
-  document.querySelectorAll('#f-type option[data-i18n], #nouv-type option[data-i18n]').forEach(el => {
-    const k = el.dataset.i18n;
-    if (T[lang][k]) el.textContent = T[lang][k];
+  document.querySelectorAll('option[data-i18n]').forEach(function(el){
+    var k=el.getAttribute('data-i18n'); if(L[k]!==undefined) el.textContent=L[k];
   });
-  // f-alert options
-  const alertSel = document.getElementById('f-alert');
-  if (alertSel) {
-    const alertKeys = ['alert.none','alert.under','alert.over','alert.baisse'];
-    alertSel.querySelectorAll('option').forEach((o, i) => { if (alertKeys[i]) o.textContent = t(alertKeys[i]); });
-  }
-  // Période nouveautés
-  const periodSel = document.getElementById('nouv-period');
-  if (periodSel) {
-    const pk = ['period.today','period.3','period.7','period.30'];
-    periodSel.querySelectorAll('option').forEach((o, i) => { if (pk[i]) o.textContent = t(pk[i]); });
-  }
-  // Multi-sel labels (si non modifiés par l'utilisateur)
-  const qLabel = document.getElementById('f-quartier-label');
-  if (qLabel && (qLabel.textContent === 'Tous' || qLabel.textContent === 'הכל' || qLabel.textContent === 'כל השכונות')) {
-    qLabel.textContent = t('multi.tout_q');
-  }
-  const pLabel = document.getElementById('f-pieces-label');
-  if (pLabel && (pLabel.textContent === 'Toutes' || pLabel.textContent === 'הכל')) {
-    pLabel.textContent = t('multi.toutes');
-  }
-  const eLabel = document.getElementById('f-equip-label');
-  if (eLabel && (eLabel.textContent === 'Tous' || eLabel.textContent === 'הכל')) {
-    eLabel.textContent = t('multi.tous');
-  }
-  // Équipements labels dans la DD
-  const eDD = document.getElementById('f-equip-dd');
-  if (eDD) {
-    eDD.querySelectorAll('input[type=checkbox]').forEach(cb => {
-      const k = 'equip.' + cb.value;
-      const lbl = cb.parentElement;
-      if (lbl && T[lang][k]) {
-        while (lbl.lastChild && lbl.lastChild.nodeType === 3) lbl.removeChild(lbl.lastChild);
-        lbl.appendChild(document.createTextNode(' ' + T[lang][k]));
-      }
-    });
-  }
-  // Ville selects options "Toutes les villes" etc.
-  document.querySelectorAll('#f-ville option[value=""], #ag-ville option[value=""], #nouv-ville option[value=""]').forEach(o => {
-    o.textContent = t('nouv.tous');
+  var aOpts=document.querySelectorAll('#f-alert option');
+  ['alert.none','alert.under','alert.over','alert.baisse'].forEach(function(k,i){if(aOpts[i]&&L[k])aOpts[i].textContent=L[k];});
+  var pOpts=document.querySelectorAll('#nouv-period option');
+  ['period.today','period.3','period.7','period.30'].forEach(function(k,i){if(pOpts[i]&&L[k])pOpts[i].textContent=L[k];});
+  ['#f-ville','#ag-ville','#nouv-ville'].forEach(function(s){
+    var o=document.querySelector(s+' option[value=""]'); if(o&&L['ville.toutes']) o.textContent=L['ville.toutes'];
   });
-  // Boutons lang
-  document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
-  document.getElementById('btn-he').classList.toggle('active', lang === 'he');
-  // Re-render KPIs et count
-  try { if (typeof renderKPIs === 'function') renderKPIs(); } catch(e){}
-  try { if (typeof render === 'function') render(); } catch(e){}
+  var qL=document.getElementById('f-quartier-label'); if(qL) qL.textContent=L['multi.quartier']||qL.textContent;
+  var pL=document.getElementById('f-pieces-label');   if(pL) pL.textContent=L['multi.pieces']||pL.textContent;
+  var eL=document.getElementById('f-equip-label');    if(eL) eL.textContent=L['multi.equip']||eL.textContent;
+  document.querySelectorAll('#f-equip-dd input[type=checkbox]').forEach(function(cb){
+    var k='equip.'+cb.value, lbl=cb.parentElement;
+    if(lbl&&L[k]){while(lbl.lastChild&&lbl.lastChild.nodeType===3)lbl.removeChild(lbl.lastChild);lbl.appendChild(document.createTextNode(' '+L[k]));}
+  });
+  var bf=document.getElementById('btn-fr'), bh=document.getElementById('btn-he');
+  if(bf) bf.className='lang-btn'+(lang==='fr'?' active':'');
+  if(bh) bh.className='lang-btn'+(lang==='he'?' active':'');
+  try{renderKPIs();}catch(e){} try{render();}catch(e){}
 }
-
-function setLang(lang) {
-  currentLang = lang;
-  try { localStorage.setItem(LANG_STORE_KEY, lang); } catch(e) {}
-  applyI18n();
+function wireLangButtons(){
+  var bf=document.getElementById('btn-fr'), bh=document.getElementById('btn-he');
+  if(bf&&!bf._w){bf._w=1;bf.addEventListener('click',function(){applyLang('fr');});}
+  if(bh&&!bh._w){bh._w=1;bh.addEventListener('click',function(){applyLang('he');});}
 }
-
-// Appliquer au chargement
-applyI18n(); // DOM déjà chargé — script en bas de page
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',function(){wireLangButtons();applyLang('fr');});
+} else {
+  wireLangButtons(); applyLang('fr');
+}
 </script>
 </body>
 </html>
