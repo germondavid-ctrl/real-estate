@@ -1315,7 +1315,7 @@ document.querySelectorAll('.tab').forEach(t => {
 //  I18N — Traductions FR / HE
 // ═══════════════════════════════════════════════════════
 const LANG_STORE_KEY = 'dg_lang';
-let currentLang = localStorage.getItem(LANG_STORE_KEY) || 'fr';
+let currentLang = (() => { try { return localStorage.getItem(LANG_STORE_KEY)||'fr'; } catch(e){ return 'fr'; } })();
 
 const T = {
   fr: {
@@ -1437,19 +1437,19 @@ function applyI18n() {
   // Boutons lang
   document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
   document.getElementById('btn-he').classList.toggle('active', lang === 'he');
-  // Re-render pour les KPIs et count (qui utilisent t())
-  if (typeof renderKPIs === 'function') renderKPIs();
-  if (typeof render === 'function') render();
+  // Re-render KPIs et count
+  try { if (typeof renderKPIs === 'function') renderKPIs(); } catch(e){}
+  try { if (typeof render === 'function') render(); } catch(e){}
 }
 
 function setLang(lang) {
   currentLang = lang;
-  localStorage.setItem(LANG_STORE_KEY, lang);
+  try { localStorage.setItem(LANG_STORE_KEY, lang); } catch(e) {}
   applyI18n();
 }
 
 // Appliquer au chargement
-document.addEventListener('DOMContentLoaded', () => { applyI18n(); });
+applyI18n(); // DOM déjà chargé — script en bas de page
 </script>
 </body>
 </html>
