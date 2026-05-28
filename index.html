@@ -22,7 +22,17 @@ body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin:0; pad
 .kpi .sub { font-size:11px; color:var(--muted); }
 .filters { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:14px; display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
 .f-group { display:flex; flex-direction:column; gap:4px; }
-.f-group label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+.lang-toggle { position:absolute; top:14px; right:18px; display:flex; gap:5px; z-index:10; }
+    .lang-btn { padding:4px 11px; border:1px solid rgba(255,255,255,.45); background:transparent; color:white; border-radius:5px; cursor:pointer; font-size:13px; font-weight:700; transition:.15s; }
+    .lang-btn:hover { background:rgba(255,255,255,.2); }
+    .lang-btn.active { background:rgba(255,255,255,.28); border-color:white; }
+    [dir="rtl"] .lang-toggle { right:auto; left:18px; }
+    [dir="rtl"] .multi-sel-dd { left:auto; right:0; }
+    [dir="rtl"] .f-group input, [dir="rtl"] .f-group select { text-align:right; }
+    [dir="rtl"] .range { flex-direction:row-reverse; }
+    [dir="rtl"] th, [dir="rtl"] td { text-align:right; }
+    [dir="rtl"] .th-right, [dir="rtl"] .right { text-align:left; }
+    .f-group label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
 .f-group input, .f-group select { padding:7px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:inherit; background:white; }
 .range { display:flex; gap:6px; align-items:center; }
 .range input { flex:1; min-width:0; }
@@ -191,81 +201,85 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
 </style>
 </head>
 <body>
-<div class="header">
+<div class="header" style="position:relative">
   <h1>David Germon Real Estate — Moteur Tel Aviv + Jérusalem</h1>
+    <div class="lang-toggle">
+    <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" id="btn-he" onclick="setLang('he')">עב</button>
+  </div>
   <div class="sub">1 110 biens (TLV : 676 · Jérusalem : 376 · Ra'anana : 47 · Ramat Gan : 10 · Kfar Saba : 1) — MAJ 27/05/2026</div>
 </div>
 <div class="tabs">
-  <div class="tab active" data-panel="search">Recherche</div>
-  <div class="tab" data-panel="analyse">Analyse marché</div>
-  <div class="tab" data-panel="projets">Projets</div>
-  <div class="tab" data-panel="agents">Agents</div>
-  <div class="tab" data-panel="nouveautes">Nouveautés</div>
+  <div class="tab active" data-panel="search" data-i18n="tab.search">Recherche</div>
+  <div class="tab" data-panel="analyse" data-i18n="tab.analyse">Analyse marché</div>
+  <div class="tab" data-panel="projets" data-i18n="tab.projets">Projets</div>
+  <div class="tab" data-panel="agents" data-i18n="tab.agents">Agents</div>
+  <div class="tab" data-panel="nouveautes" data-i18n="tab.nouv">Nouveautés</div>
 </div>
 
 <div class="panel active" id="search">
   <div class="kpi-row" id="kpis"></div>
   <div class="filters">
-    <div class="f-group"><label>Ville</label>
+    <div class="f-group"><label data-i18n="lbl.ville">Ville</label>
       <select id="f-ville"><option value="">Toutes</option><option>Tel Aviv</option><option>Jerusalem</option><option>Ra'anana</option><option>Ramat Gan</option><option>Kfar Saba</option></select>
     </div>
-    <div class="f-group"><label>Recherche libre</label><input id="q" type="search" placeholder="Adresse, agent, mots-clés..."></div>
-    <div class="f-group"><label>Type</label>
-      <select id="f-type"><option value="">Tous</option><option>Vente</option><option>Location</option><option value="Penthouse">Penthouse</option><option value="Jardin">Avec jardin</option><option value="Mamad">Avec mamad</option><option value="Vue mer">Vue mer</option></select>
+    <div class="f-group"><label data-i18n="lbl.search">Recherche libre</label><input id="q" type="search" placeholder="Adresse, agent, mots-clés..." data-i18n-ph="ph.q"></div>
+    <div class="f-group"><label data-i18n="lbl.type">Type</label>
+      <select id="f-type"><option value="" data-i18n="opt.tous">Tous</option><option data-i18n="opt.vente">Vente</option><option data-i18n="opt.loc">Location</option><option value="Penthouse" data-i18n="opt.ph">Penthouse</option><option value="Jardin" data-i18n="opt.jardin">Avec jardin</option><option value="Mamad" data-i18n="opt.mamad">Avec mamad</option><option value="Vue mer" data-i18n="opt.vmer">Vue mer</option></select>
     </div>
-    <div class="f-group f-group-quartier"><label>Quartier</label>
+    <div class="f-group f-group-quartier"><label data-i18n="lbl.quartier">Quartier</label>
       <div class="multi-sel" id="f-quartier-wrap">
         <div class="multi-sel-btn" id="f-quartier-btn" onclick="toggleQuartierDD()"><span id="f-quartier-label">Tous</span> ▾</div>
         <div class="multi-sel-dd" id="f-quartier-dd" style="max-height:220px;overflow-y:auto;"></div>
       </div>
     </div>
-    <div class="f-group f-group-pieces"><label>Pièces</label>
+    <div class="f-group f-group-pieces"><label data-i18n="lbl.pieces">Pièces</label>
       <div class="multi-sel" id="f-pieces-wrap">
         <div class="multi-sel-btn" id="f-pieces-btn" onclick="togglePiecesDD()"><span id="f-pieces-label">Toutes</span> ▾</div>
         <div class="multi-sel-dd" id="f-pieces-dd"></div>
       </div>
     </div>
-    <div class="f-group"><label>Budget (₪)</label>
+    <div class="f-group"><label data-i18n="lbl.prix">Budget (₪)</label>
       <div class="range"><input id="f-pmin" type="number" placeholder="Min"><span>-</span><input id="f-pmax" type="number" placeholder="Max"></div>
     </div>
-    <div class="f-group"><label>Prix/m² (₪)</label>
+    <div class="f-group"><label data-i18n="lbl.prixm2">Prix/m² (₪)</label>
       <div class="range"><input id="f-m2min" type="number" placeholder="Min"><span>-</span><input id="f-m2max" type="number" placeholder="Max"></div>
     </div>
-    <div class="f-group"><label>Surface (m²)</label>
+    <div class="f-group"><label data-i18n="lbl.surf">Surface (m²)</label>
       <div class="range"><input id="f-smin" type="number" placeholder="Min"><span>-</span><input id="f-smax" type="number" placeholder="Max"></div>
     </div>
-    <div class="f-group"><label>Équipements</label>
+    <div class="f-group"><label data-i18n="lbl.equip">Équipements</label>
       <div class="multi-sel" id="f-equip-wrap">
         <div class="multi-sel-btn" id="f-equip-btn" onclick="toggleEquipDD()"><span id="f-equip-label">Tous</span> ▾</div>
         <div class="multi-sel-dd" id="f-equip-dd"></div>
       </div>
     </div>
-    <div class="f-group"><label>Alertes</label>
+    <div class="f-group"><label data-i18n="lbl.alertes">Alertes</label>
       <select id="f-alert"><option value="">Aucune</option><option value="under">Sous-évalués (-25% médiane)</option><option value="over">Sur-évalués (+25%)</option><option value="new">Nouveaux (26/04)</option><option value="baisse">Baisses de prix</option></select>
     </div>
   </div>
   <div class="actions">
-    <button class="btn btn-primary" onclick="reset()">Réinitialiser</button>
-    <button class="btn" onclick="exportCSV()">Exporter CSV</button>
+    <button class="btn btn-primary" onclick="reset()" data-i18n="btn.reset">Réinitialiser</button>
+    <button class="btn" onclick="exportCSV()" data-i18n="btn.csv">Exporter CSV</button>
     <span class="count" id="count"></span>
   </div>
   <table id="tbl"><thead><tr>
     <th data-k="id">#</th>
-    <th data-k="ville">Ville</th>
-    <th data-k="type">Type</th>
-    <th data-k="adresse">Adresse</th>
-    <th data-k="quartier">Quartier</th>
-    <th data-k="pieces" class="center">P.</th>
-    <th data-k="surf_batie_m2" class="right">Surf.</th>
-    <th data-k="prix_nis" class="right">Prix</th>
-    <th data-k="prix_m2_nis" class="right">Prix/m²</th>
-    <th data-k="agent">Agent / Contact</th>
+    <th data-k="ville" data-i18n="th.ville">Ville</th>
+    <th data-k="type" data-i18n="th.type">Type</th>
+    <th data-k="adresse" data-i18n="th.adresse">Adresse</th>
+    <th data-k="quartier" data-i18n="th.quartier">Quartier</th>
+    <th data-k="pieces" class="center" data-i18n="th.pieces">P.</th>
+    <th data-k="surf_batie_m2" class="right" data-i18n="th.surf">Surf.</th>
+    <th data-k="prix_nis" class="right" data-i18n="th.prix">Prix</th>
+    <th data-k="prix_m2_nis" class="right" data-i18n="th.prixm2">Prix/m²</th>
+    <th data-k="agent" data-i18n="th.agent">Agent / Contact</th>
   </tr></thead><tbody id="tbody"></tbody></table>
 </div>
 
 <div class="panel" id="analyse">
   <div class="section">
-    <h2 style="margin-top:0">Analyse de marché</h2>
+    <h2 style="margin-top:0" data-i18n="h2.analyse">Analyse de marché</h2>
     <div class="analyse-nav">
       <div class="city-tabs" id="an-city-tabs">
         <button class="city-tab active" data-city="" onclick="renderAnalyse('',null,this)">Toutes</button>
@@ -310,7 +324,7 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
 </div>
 <div class="panel" id="projets">
   <div class="section">
-    <h2 style="margin-top:0">Projets neufs &amp; développement</h2>
+    <h2 style="margin-top:0" data-i18n="h2.projets">Projets neufs &amp; développement</h2>
     <div class="city-tabs" id="proj-city-tabs">
       <button class="city-tab active" data-city="Tel Aviv" onclick="renderProjets('Tel Aviv',this)">Tel Aviv</button>
       <button class="city-tab" data-city="Jerusalem" onclick="renderProjets('Jerusalem',this)">Jérusalem</button>
@@ -329,7 +343,7 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
 
 <div class="panel" id="agents">
   <div class="section">
-    <h2 style="margin-top:0">Recherche par agent</h2>
+    <h2 style="margin-top:0" data-i18n="h2.agents">Recherche par agent</h2>
     <div class="ag-search-bar">
       <div class="f-group">
         <label>Ville</label>
@@ -343,8 +357,8 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
         </select>
       </div>
       <div class="f-group" style="flex:2">
-        <label>Nom ou numéro de téléphone</label>
-        <input id="ag-q" type="search" placeholder="Ex: Cohen, 052…" oninput="renderAgents()">
+        <label data-i18n="lbl.agent_q">Nom ou numéro de téléphone</label>
+        <input id="ag-q" type="search" placeholder="Ex: Cohen, 052…" data-i18n-ph="ph.agent" oninput="renderAgents()">
       </div>
     </div>
     <div class="ag-count" id="ag-count"></div>
@@ -355,10 +369,10 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
 
 <div class="panel" id="nouveautes">
   <div class="section">
-    <h2 style="margin-top:0">Nouveautés — dernières publications</h2>
+    <h2 style="margin-top:0" data-i18n="h2.nouv">Nouveautés — dernières publications</h2>
     <div class="nouv-bar">
       <div class="f-group">
-        <label>Ville</label>
+        <label data-i18n="lbl.ville">Ville</label>
         <select id="nouv-ville" onchange="renderNouveautes()">
           <option value="">Toutes les villes</option>
           <option value="Tel Aviv">Tel Aviv</option>
@@ -369,7 +383,7 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
         </select>
       </div>
       <div class="f-group">
-        <label>Période</label>
+        <label data-i18n="lbl.periode">Période</label>
         <select id="nouv-period" onchange="renderNouveautes()">
           <option value="today">Aujourd'hui</option>
           <option value="3">3 derniers jours</option>
@@ -380,7 +394,7 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
         </select>
       </div>
       <div class="f-group">
-        <label>Type</label>
+        <label data-i18n="lbl.type">Type</label>
         <select id="nouv-type" onchange="renderNouveautes()">
           <option value="">Tous</option>
           <option value="Vente">Vente</option>
@@ -676,7 +690,7 @@ function render() {
       '<td><div class="agent">' + escapeHTML(r.agent||'') + '</div><div class="tel">' + escapeHTML(r.telephone||'') + '</div><div style="margin-top:4px">' + buildContactBtns(r) + '</div></td>' +
       '</tr>';
   }).join('');
-  document.getElementById('count').textContent = filtered.length + ' / ' + records.length + ' biens';
+  document.getElementById('count').textContent = filtered.length + ' / ' + records.length + ' ' + t('count.biens');
   document.querySelectorAll('thead th').forEach(th => {
     th.classList.toggle('sorted', th.dataset.k === sortKey);
     th.classList.toggle('asc', sortAsc);
@@ -689,7 +703,7 @@ function renderKPIs() {
   const tlvN = filtered.filter(r => r.ville === 'Tel Aviv').length;
   const jeruN = filtered.filter(r => r.ville === 'Jerusalem').length;
   document.getElementById('kpis').innerHTML =
-    '<div class="kpi"><div class="label">Affichés</div><div class="value">' + filtered.length + '</div><div class="sub">sur ' + records.length + '</div></div>' +
+    '<div class="kpi"><div class="label">' + t('kpi.affich') + '</div><div class="value">' + filtered.length + '</div><div class="sub">' + t('kpi.sur') + ' ' + records.length + '</div></div>' +
     '<div class="kpi"><div class="label">Tel Aviv</div><div class="value" style="color:var(--tlv)">' + tlvN + '</div></div>' +
     '<div class="kpi"><div class="label">Jérusalem</div><div class="value" style="color:var(--jeru)">' + jeruN + '</div></div>' +
     '<div class="kpi"><div class="label">Médiane ₪/m²</div><div class="value">' + (m ? m.toLocaleString('fr-FR') : '-') + '</div></div>';
@@ -1295,6 +1309,147 @@ document.querySelectorAll('.tab').forEach(t => {
 });
 
 
+
+
+// ═══════════════════════════════════════════════════════
+//  I18N — Traductions FR / HE
+// ═══════════════════════════════════════════════════════
+const LANG_STORE_KEY = 'dg_lang';
+let currentLang = localStorage.getItem(LANG_STORE_KEY) || 'fr';
+
+const T = {
+  fr: {
+    'tab.search':'Recherche','tab.analyse':'Analyse marché','tab.projets':'Projets',
+    'tab.agents':'Agents','tab.nouv':'Nouveautés',
+    'lbl.ville':'Ville','lbl.search':'Recherche libre','lbl.type':'Type',
+    'lbl.quartier':'Quartier','lbl.pieces':'Pièces','lbl.prix':'Budget (₪)',
+    'lbl.prixm2':'Prix/m² (₪)','lbl.surf':'Surface (m²)','lbl.equip':'Équipements',
+    'lbl.alertes':'Alertes','lbl.agent_q':'Nom ou numéro de téléphone','lbl.periode':'Période',
+    'opt.tous':'Tous','opt.vente':'Vente','opt.loc':'Location','opt.ph':'Penthouse',
+    'opt.jardin':'Avec jardin','opt.mamad':'Avec mamad','opt.vmer':'Vue mer',
+    'btn.reset':'Réinitialiser','btn.csv':'Exporter CSV',
+    'th.ville':'Ville','th.type':'Type','th.adresse':'Adresse','th.quartier':'Quartier',
+    'th.pieces':'P.','th.surf':'Surf.','th.prix':'Prix','th.prixm2':'Prix/m²','th.agent':'Agent / Contact',
+    'h2.analyse':'Analyse de marché','h2.projets':'Projets neufs & développement',
+    'h2.agents':'Recherche par agent','h2.nouv':'Nouveautés — dernières publications',
+    'ph.q':'Adresse, agent, mots-clés...','ph.agent':'Ex: Cohen, 052…',
+    'kpi.affich':'Affichés','kpi.sur':'sur','kpi.med':'Médiane Prix/m²','kpi.tlv':'Tel Aviv','kpi.jeru':'Jérusalem',
+    'multi.tous':'Tous','multi.toutes':'Toutes','multi.tout_q':'Tous quartiers',
+    'equip.ascenseur':'Ascenseur','equip.parking':'Parking','equip.balcon':'Balcon',
+    'equip.mahsan':'Mahsan','equip.mamad':'Mamad',
+    'nouv.tous':'Toutes les villes','period.today':"Aujourd'hui",
+    'period.3':'3 derniers jours','period.7':'7 derniers jours','period.30':'30 derniers jours',
+    'alert.none':'Aucune','alert.under':'Sous-évalués (-25% médiane)','alert.over':'Sur-évalués (+25%)',
+    'alert.baisse':'Baisses de prix',
+    'count.sur':'sur','count.biens':'biens',
+    'dir':'ltr',
+  },
+  he: {
+    'tab.search':'חיפוש','tab.analyse':'ניתוח שוק','tab.projets':'פרויקטים',
+    'tab.agents':'סוכנים','tab.nouv':'חדשות',
+    'lbl.ville':'עיר','lbl.search':'חיפוש חופשי','lbl.type':'סוג',
+    'lbl.quartier':'שכונה','lbl.pieces':'חדרים','lbl.prix':'תקציב (₪)',
+    'lbl.prixm2':'מחיר/מ"ר (₪)','lbl.surf':'שטח (מ"ר)','lbl.equip':'מאפיינים',
+    'lbl.alertes':'התראות','lbl.agent_q':'שם או מספר טלפון','lbl.periode':'תקופה',
+    'opt.tous':'הכל','opt.vente':'מכירה','opt.loc':'השכרה','opt.ph':'פנטהאוס',
+    'opt.jardin':'עם גינה','opt.mamad':'עם ממ"ד','opt.vmer':'נוף לים',
+    'btn.reset':'איפוס','btn.csv':'ייצוא CSV',
+    'th.ville':'עיר','th.type':'סוג','th.adresse':'כתובת','th.quartier':'שכונה',
+    'th.pieces':'חד\'','th.surf':'שטח','th.prix':'מחיר','th.prixm2':'מחיר/מ"ר','th.agent':'סוכן / קשר',
+    'h2.analyse':'ניתוח שוק','h2.projets':'פרויקטים חדשים ופיתוח',
+    'h2.agents':'חיפוש לפי סוכן','h2.nouv':'חדשות — פרסומים אחרונים',
+    'ph.q':'כתובת, סוכן, מילות מפתח...','ph.agent':'למשל: כהן, 052…',
+    'kpi.affich':'מוצגים','kpi.sur':'מתוך','kpi.med':'חציון מחיר/מ"ר','kpi.tlv':'תל אביב','kpi.jeru':'ירושלים',
+    'multi.tous':'הכל','multi.toutes':'הכל','multi.tout_q':'כל השכונות',
+    'equip.ascenseur':'מעלית','equip.parking':'חניה','equip.balcon':'מרפסת',
+    'equip.mahsan':'מחסן','equip.mamad':'ממ"ד',
+    'nouv.tous':'כל הערים','period.today':'היום',
+    'period.3':'3 ימים אחרונים','period.7':'7 ימים אחרונים','period.30':'30 ימים אחרונים',
+    'alert.none':'ללא','alert.under':'מתחת לשוק (−25% חציון)','alert.over':'מעל שוק (+25%)',
+    'alert.baisse':'ירידות מחיר',
+    'count.sur':'מתוך','count.biens':'נכסים',
+    'dir':'rtl',
+  }
+};
+
+function t(key) { return (T[currentLang] && T[currentLang][key]) || (T['fr'][key]) || key; }
+
+function applyI18n() {
+  const lang = currentLang;
+  document.documentElement.dir = T[lang]['dir'];
+  document.documentElement.lang = lang === 'he' ? 'he' : 'fr';
+  // Textes statiques
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (T[lang][k]) el.textContent = T[lang][k];
+  });
+  // Placeholders
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const k = el.dataset.i18nPh;
+    if (T[lang][k]) el.placeholder = T[lang][k];
+  });
+  // Options select f-type
+  document.querySelectorAll('#f-type option[data-i18n], #nouv-type option[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (T[lang][k]) el.textContent = T[lang][k];
+  });
+  // f-alert options
+  const alertSel = document.getElementById('f-alert');
+  if (alertSel) {
+    const alertKeys = ['alert.none','alert.under','alert.over','alert.baisse'];
+    alertSel.querySelectorAll('option').forEach((o, i) => { if (alertKeys[i]) o.textContent = t(alertKeys[i]); });
+  }
+  // Période nouveautés
+  const periodSel = document.getElementById('nouv-period');
+  if (periodSel) {
+    const pk = ['period.today','period.3','period.7','period.30'];
+    periodSel.querySelectorAll('option').forEach((o, i) => { if (pk[i]) o.textContent = t(pk[i]); });
+  }
+  // Multi-sel labels (si non modifiés par l'utilisateur)
+  const qLabel = document.getElementById('f-quartier-label');
+  if (qLabel && (qLabel.textContent === 'Tous' || qLabel.textContent === 'הכל' || qLabel.textContent === 'כל השכונות')) {
+    qLabel.textContent = t('multi.tout_q');
+  }
+  const pLabel = document.getElementById('f-pieces-label');
+  if (pLabel && (pLabel.textContent === 'Toutes' || pLabel.textContent === 'הכל')) {
+    pLabel.textContent = t('multi.toutes');
+  }
+  const eLabel = document.getElementById('f-equip-label');
+  if (eLabel && (eLabel.textContent === 'Tous' || eLabel.textContent === 'הכל')) {
+    eLabel.textContent = t('multi.tous');
+  }
+  // Équipements labels dans la DD
+  const eDD = document.getElementById('f-equip-dd');
+  if (eDD) {
+    eDD.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      const k = 'equip.' + cb.value;
+      const lbl = cb.parentElement;
+      if (lbl && T[lang][k]) {
+        while (lbl.lastChild && lbl.lastChild.nodeType === 3) lbl.removeChild(lbl.lastChild);
+        lbl.appendChild(document.createTextNode(' ' + T[lang][k]));
+      }
+    });
+  }
+  // Ville selects options "Toutes les villes" etc.
+  document.querySelectorAll('#f-ville option[value=""], #ag-ville option[value=""], #nouv-ville option[value=""]').forEach(o => {
+    o.textContent = t('nouv.tous');
+  });
+  // Boutons lang
+  document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+  document.getElementById('btn-he').classList.toggle('active', lang === 'he');
+  // Re-render pour les KPIs et count (qui utilisent t())
+  if (typeof renderKPIs === 'function') renderKPIs();
+  if (typeof render === 'function') render();
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem(LANG_STORE_KEY, lang);
+  applyI18n();
+}
+
+// Appliquer au chargement
+document.addEventListener('DOMContentLoaded', () => { applyI18n(); });
 </script>
 </body>
 </html>
