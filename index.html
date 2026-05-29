@@ -26,7 +26,6 @@ body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin:0; pad
     .lang-btn { padding:4px 11px; border:1px solid rgba(255,255,255,.45); background:transparent; color:white; border-radius:5px; cursor:pointer; font-size:13px; font-weight:700; transition:.15s; }
     .lang-btn:hover { background:rgba(255,255,255,.2); }
     .lang-btn.active { background:rgba(255,255,255,.28); border-color:white; }
-    .count { display:inline-block; background:#f0f4ff; border:1px solid #c7d2fe; border-radius:8px; padding:6px 14px; font-size:13px; font-weight:600; color:#1e3a8a; margin-bottom:4px; }
     [dir="rtl"] .lang-toggle { right:auto; left:18px; }
     [dir="rtl"] .multi-sel-dd { left:auto; right:0; }
     [dir="rtl"] .f-group input, [dir="rtl"] .f-group select { text-align:right; }
@@ -41,7 +40,6 @@ body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin:0; pad
 .btn { padding:7px 14px; border:1px solid var(--border); background:white; border-radius:6px; cursor:pointer; font-size:13px; }
 .btn:hover { background:#f1f5f9; }
 .btn-primary { background:var(--primary); color:white; border-color:var(--primary); }
-.count { font-size:13px; color:var(--muted); margin-left:auto; }
 table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; font-size:12.5px; }
 thead th { background:#f1f5f9; padding:10px 8px; text-align:left; font-weight:600; font-size:11.5px; color:#374151; cursor:pointer; user-select:none; border-bottom:1px solid var(--border); white-space:nowrap; }
 thead th:hover { background:#e2e8f0; }
@@ -199,7 +197,18 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
 .nouv-flags{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
 .nouv-empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
 
-</style>
+
+    #result-bar {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      background:#f8faff; border:1px solid #dde5f4; border-radius:8px;
+      padding:8px 16px; margin:8px 0 4px 0; font-size:13px; font-weight:600; color:#1e3a8a;
+      min-height:36px;
+    }
+    #result-bar .rb-total { font-size:15px; font-weight:700; }
+    #result-bar .rb-sep { color:#aab; font-weight:400; }
+    #result-bar .rb-city { padding:2px 8px; border-radius:12px; font-size:12px; }
+    .count { display:none; }
+  </style>
 </head>
 <body>
 <div class="header" style="position:relative">
@@ -263,6 +272,11 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
     <button class="btn btn-primary" onclick="reset()" data-i18n="btn.reset">Réinitialiser</button>
     <button class="btn" onclick="exportCSV()" data-i18n="btn.csv">Exporter CSV</button>
     <span class="count" id="count"></span>
+  </div>
+  <div id="result-bar">
+    <span class="rb-total" id="rb-total">—</span>
+    <span class="rb-sep">biens</span>
+    <span id="rb-cities"></span>
   </div>
   <table id="tbl"><thead><tr>
     <th data-k="id">#</th>
@@ -691,7 +705,6 @@ function render() {
       '<td><div class="agent">' + escapeHTML(r.agent||'') + '</div><div class="tel">' + escapeHTML(r.telephone||'') + '</div><div style="margin-top:4px">' + buildContactBtns(r) + '</div></td>' +
       '</tr>';
   }).join('');
-  document.getElementById('count').textContent = filtered.length + ' / ' + records.length + ' ' + tr('count.biens');
   document.querySelectorAll('thead th').forEach(th => {
     th.classList.toggle('sorted', th.dataset.k === sortKey);
     th.classList.toggle('asc', sortAsc);
@@ -706,17 +719,18 @@ function renderKPIs() {
   const raaN  = filtered.filter(r => r.ville === "Ra'anana").length;
   const rgN   = filtered.filter(r => r.ville === 'Ramat Gan').length;
   const ksN   = filtered.filter(r => r.ville === 'Kfar Saba').length;
-  // Compteur proéminent sous les filtres
-  const countEl = document.getElementById('count');
-  if (countEl) {
-    const parts = [];
-    if (tlvN)  parts.push('<span style="color:var(--tlv)">TLV ' + tlvN + '</span>');
-    if (jeruN) parts.push('<span style="color:var(--jeru)">Jeru ' + jeruN + '</span>');
-    if (raaN)  parts.push('<span style="color:#7c3aed">Ra’anana ' + raaN + '</span>');
-    if (rgN)   parts.push('<span style="color:#0891b2">Ramat Gan ' + rgN + '</span>');
-    if (ksN)   parts.push('<span style="color:#059669">Kfar Saba ' + ksN + '</span>');
-    countEl.innerHTML = '<strong>' + filtered.length + '</strong> bien' + (filtered.length>1?'s':'') + ' / ' + records.length
-      + (parts.length ? ' — ' + parts.join(' · ') : '');
+  // Barre de résultats
+  const rbTotal = document.getElementById('rb-total');
+  const rbCities = document.getElementById('rb-cities');
+  if (rbTotal) rbTotal.textContent = filtered.length + ' / ' + records.length;
+  if (rbCities) {
+    const cityParts = [];
+    if (tlvN)  cityParts.push('<span class="rb-city" style="background:#dbeafe;color:#1d4ed8">TLV ' + tlvN + '</span>');
+    if (jeruN) cityParts.push('<span class="rb-city" style="background:#fee2e2;color:#b91c1c">Jeru ' + jeruN + '</span>');
+    if (raaN)  cityParts.push('<span class="rb-city" style="background:#ede9fe;color:#6d28d9">Ra’anana ' + raaN + '</span>');
+    if (rgN)   cityParts.push('<span class="rb-city" style="background:#e0f2fe;color:#0369a1">Ramat Gan ' + rgN + '</span>');
+    if (ksN)   cityParts.push('<span class="rb-city" style="background:#dcfce7;color:#166534">Kfar Saba ' + ksN + '</span>');
+    rbCities.innerHTML = cityParts.join('');
   }
   document.getElementById('kpis').innerHTML =
     '<div class="kpi"><div class="label">' + tr('kpi.affich') + '</div><div class="value">' + filtered.length + '</div><div class="sub">' + tr('kpi.sur') + ' ' + records.length + '</div></div>' +
