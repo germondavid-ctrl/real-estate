@@ -607,7 +607,7 @@ function applyFilters() {
     }
     return true;
   });
-  sortFiltered(); render(); renderKPIs();
+  updateBar(); sortFiltered(); render(); try{renderKPIs();}catch(e){}
 }
 function sortFiltered() {
   filtered.sort((a, b) => {
@@ -710,6 +710,26 @@ function render() {
     th.classList.toggle('asc', sortAsc);
   });
 }
+function updateBar() {
+  var rbTotal = document.getElementById('rb-total');
+  var rbCities = document.getElementById('rb-cities');
+  if (!rbTotal) return;
+  rbTotal.textContent = filtered.length + ' / ' + records.length;
+  if (rbCities) {
+    var tlvN  = filtered.filter(function(r){return r.ville==='Tel Aviv';}).length;
+    var jeruN = filtered.filter(function(r){return r.ville==='Jerusalem';}).length;
+    var raaN  = filtered.filter(function(r){return r.ville==="Ra'anana";}).length;
+    var rgN   = filtered.filter(function(r){return r.ville==='Ramat Gan';}).length;
+    var ksN   = filtered.filter(function(r){return r.ville==='Kfar Saba';}).length;
+    var parts = [];
+    if (tlvN)  parts.push('<span class="rb-city" style="background:#dbeafe;color:#1d4ed8">TLV ' + tlvN + '</span>');
+    if (jeruN) parts.push('<span class="rb-city" style="background:#fee2e2;color:#b91c1c">Jéru ' + jeruN + '</span>');
+    if (raaN)  parts.push('<span class="rb-city" style="background:#ede9fe;color:#6d28d9">Ra’anana ' + raaN + '</span>');
+    if (rgN)   parts.push('<span class="rb-city" style="background:#e0f2fe;color:#0369a1">R.Gan ' + rgN + '</span>');
+    if (ksN)   parts.push('<span class="rb-city" style="background:#dcfce7;color:#166534">K.Saba ' + ksN + '</span>');
+    rbCities.innerHTML = parts.join('');
+  }
+}
 function renderKPIs() {
   const sales = filtered.filter(r => r.type === 'Vente' && r.prix_m2_nis);
   const md = a => { if (!a.length) return null; const s = [...a].sort((x,y) => x-y); return s[Math.floor(s.length/2)]; };
@@ -719,19 +739,7 @@ function renderKPIs() {
   const raaN  = filtered.filter(r => r.ville === "Ra'anana").length;
   const rgN   = filtered.filter(r => r.ville === 'Ramat Gan').length;
   const ksN   = filtered.filter(r => r.ville === 'Kfar Saba').length;
-  // Barre de résultats
-  const rbTotal = document.getElementById('rb-total');
-  const rbCities = document.getElementById('rb-cities');
-  if (rbTotal) rbTotal.textContent = filtered.length + ' / ' + records.length;
-  if (rbCities) {
-    const cityParts = [];
-    if (tlvN)  cityParts.push('<span class="rb-city" style="background:#dbeafe;color:#1d4ed8">TLV ' + tlvN + '</span>');
-    if (jeruN) cityParts.push('<span class="rb-city" style="background:#fee2e2;color:#b91c1c">Jeru ' + jeruN + '</span>');
-    if (raaN)  cityParts.push('<span class="rb-city" style="background:#ede9fe;color:#6d28d9">Ra’anana ' + raaN + '</span>');
-    if (rgN)   cityParts.push('<span class="rb-city" style="background:#e0f2fe;color:#0369a1">Ramat Gan ' + rgN + '</span>');
-    if (ksN)   cityParts.push('<span class="rb-city" style="background:#dcfce7;color:#166534">Kfar Saba ' + ksN + '</span>');
-    rbCities.innerHTML = cityParts.join('');
-  }
+
   document.getElementById('kpis').innerHTML =
     '<div class="kpi"><div class="label">' + tr('kpi.affich') + '</div><div class="value">' + filtered.length + '</div><div class="sub">' + tr('kpi.sur') + ' ' + records.length + '</div></div>' +
     '<div class="kpi"><div class="label">Tel Aviv</div><div class="value" style="color:var(--tlv)">' + tlvN + '</div></div>' +
@@ -1422,7 +1430,7 @@ function applyLang(lang) {
   var bf=document.getElementById('btn-fr'), bh=document.getElementById('btn-he');
   if(bf) bf.className='lang-btn'+(lang==='fr'?' active':'');
   if(bh) bh.className='lang-btn'+(lang==='he'?' active':'');
-  try{renderKPIs();}catch(e){} try{render();}catch(e){}
+  updateBar(); try{renderKPIs();}catch(e){} try{render();}catch(e){}
 }
 function wireLangButtons(){
   var bf=document.getElementById('btn-fr'), bh=document.getElementById('btn-he');
