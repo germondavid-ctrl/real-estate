@@ -1783,17 +1783,16 @@ function openWebSearch(platform) {
   }
   else if (platform === 'facebook') {
     const heCity = city ? city.fb_he : '';
-    // Catégorie immobilière dédiée : propertyforsale / propertyrentals
-    const category = f.transaction === 'rent' ? 'propertyrentals' : 'propertyforsale';
+    const txHe = f.transaction === 'rent' ? 'להשכרה' : 'למכירה';
     const parts = [];
     if (heCity) parts.push(heCity);
     if (f.quartier) parts.push(f.quartier);
+    parts.push('דירה ' + txHe);
     if (f.rMin) parts.push(f.rMin + ' חדרים');
     if (f.penthouse) parts.push('פנטהאוס');
     if (f.jardin) parts.push('גינה');
     if (f.vueMer) parts.push('נוף לים');
-    const q = parts.length ? '?query=' + encodeURIComponent(parts.join(' ')) : '';
-    url = 'https://www.facebook.com/marketplace/category/' + category + q;
+    url = 'https://www.facebook.com/marketplace/search/?query=' + encodeURIComponent(parts.join(' '));
   }
   else if (platform === 'onmap') {
     const slug = city ? city.onmap : '';
