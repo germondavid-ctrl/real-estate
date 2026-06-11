@@ -241,6 +241,79 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
 .web-anglosaxon { background:#c0392b; }
 .web-govmap { background:#5b5f97; }
 
+
+/* ═══ CRM MODULE ═══ */
+.crm-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;line-height:1.5}
+.crm-badge.propose{background:#dbeafe;color:#1d4ed8}
+.crm-badge.visite{background:#fef3c7;color:#b45309}
+.crm-badge.offre{background:#ede9fe;color:#6d28d9}
+.crm-badge.vendu{background:#fee2e2;color:#b91c1c}
+.crm-add-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#e2e8f0;border-radius:50%;cursor:pointer;font-size:16px;color:#64748b;font-weight:700;border:none;line-height:1}
+.crm-add-btn:hover{background:#cbd5e1}
+td.crm-cell{text-align:center;white-space:nowrap}
+tr.crm-highlight{background:#eff6ff !important}
+#crm-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center}
+#crm-modal.open{display:flex}
+#crm-modal-box{background:#fff;border-radius:12px;padding:24px;width:440px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+#crm-modal-box h3{margin:0 0 4px;font-size:14px;color:var(--text)}
+#crm-modal-addr{font-size:12px;color:#64748b;margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crm-mrow{margin-bottom:12px}
+.crm-mrow label{display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.crm-mrow select,.crm-mrow textarea,.crm-mrow input{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box;font-family:inherit}
+.crm-mrow textarea{resize:vertical;min-height:56px}
+.crm-m-btns{display:flex;gap:8px;margin-top:16px}
+.crm-m-btns button{flex:1;padding:8px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600}
+.crm-m-save{background:var(--primary);color:#fff}
+.crm-m-cancel{background:#f1f5f9;color:#475569}
+.crm-client-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;min-height:26px}
+.crm-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;background:#dbeafe;color:#1d4ed8;border-radius:12px;font-size:11px;font-weight:600}
+.crm-chip .rm{cursor:pointer;color:#93c5fd;font-size:13px}
+.crm-chip .rm:hover{color:#1e40af}
+#crm{padding:0}
+.crm-sub-nav{display:flex;border-bottom:2px solid var(--border);margin-bottom:20px}
+.crm-sub-tab{padding:9px 20px;cursor:pointer;font-size:13px;font-weight:600;color:#64748b;border-bottom:2px solid transparent;margin-bottom:-2px}
+.crm-sub-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.crm-sub-panel{display:none}
+.crm-sub-panel.active{display:block}
+.crm-client-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.crm-avatar{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+.crm-card-body{flex:1;min-width:0}
+.crm-card-name{font-weight:700;font-size:14px;color:var(--text)}
+.crm-card-meta{font-size:12px;color:#64748b;margin-top:3px}
+.crm-card-notes{font-size:11px;color:#94a3b8;font-style:italic;margin-top:3px}
+.crm-card-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.crm-cbtn{padding:4px 11px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#f8fafc;color:#475569}
+.crm-cbtn:hover{background:#e2e8f0}
+.crm-cbtn.danger{border-color:#fca5a5;color:#dc2626}
+.crm-cbtn.danger:hover{background:#fee2e2}
+.crm-cbtn.primary{background:var(--primary);color:#fff;border-color:transparent}
+#crm-add-form{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;display:none}
+#crm-add-form.open{display:block}
+#crm-form-title{font-weight:700;font-size:14px;margin:0 0 14px;color:var(--text)}
+.crm-fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.crm-ff{display:flex;flex-direction:column;gap:4px}
+.crm-ff.full{grid-column:1/-1}
+.crm-ff label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px}
+.crm-ff input,.crm-ff textarea{padding:6px 9px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit}
+.crm-ff textarea{resize:vertical;min-height:50px}
+.crm-factions{grid-column:1/-1;display:flex;gap:8px;margin-top:6px}
+.crm-factions button{padding:7px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none}
+.crm-fsave{background:var(--primary);color:#fff}
+.crm-fcancel{background:#f1f5f9;color:#475569}
+.crm-pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.crm-pipeline{grid-template-columns:repeat(2,1fr)}}
+.crm-pcol{background:#f8fafc;border-radius:10px;padding:12px;min-height:80px}
+.crm-pcol-header{font-size:12px;font-weight:700;margin:0 0 10px;display:flex;align-items:center;gap:6px}
+.crm-pcount{background:#e2e8f0;padding:1px 7px;border-radius:8px;font-size:11px;font-weight:600}
+.crm-pcard{background:#fff;border:1px solid var(--border);border-radius:7px;padding:9px 10px;margin-bottom:8px;font-size:12px;cursor:pointer}
+.crm-pcard:hover{border-color:var(--primary)}
+.crm-pcard .pa{font-weight:600;color:var(--text)}
+.crm-pcard .pp{color:#64748b;margin-top:2px}
+.crm-pcard .pc{color:var(--primary);margin-top:4px;font-size:11px}
+.crm-pcard .pn{color:#94a3b8;font-size:10px;margin-top:3px;font-style:italic}
+#crm-banner{background:#dbeafe;border:1px solid #bfdbfe;padding:8px 14px;border-radius:7px;font-size:13px;color:#1d4ed8;margin-bottom:10px;display:none;align-items:center;justify-content:space-between}
+#crm-banner.show{display:flex}
+
 </style>
 </head>
 <body>
@@ -259,6 +332,7 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
   <div class="tab" data-panel="agents" data-i18n="tab.agents">Agents</div>
   <div class="tab" data-panel="nouveautes" data-i18n="tab.nouv">Nouveautés</div>
   <div class="tab" data-panel="weblinks">🌐 Sites Web</div>
+  <div class="tab" data-panel="crm">📋 CRM</div>
 </div>
 
 <div class="panel active" id="search">
@@ -323,6 +397,7 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
     <th data-k="prix_nis" class="right" data-i18n="th.prix">Prix</th>
     <th data-k="prix_m2_nis" class="right" data-i18n="th.prixm2">Prix/m²</th>
     <th data-k="agent" data-i18n="th.agent">Agent / Contact</th>
+    <th style="text-align:center;width:58px">CRM</th>
   </tr></thead><tbody id="tbody"></tbody></table>
 </div>
 
@@ -592,6 +667,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
   t.classList.add('active');
   document.getElementById(t.dataset.panel).classList.add('active');
+  if(t.dataset.panel==='crm')renderCRM();
 }));
 
 function getF() {
@@ -723,7 +799,7 @@ function isBaisse(r) {
 }
 function render() {
   const tb = document.getElementById('tbody');
-  if (!filtered.length) { tb.innerHTML = '<tr><td colspan="10" class="empty">Aucun bien.</td></tr>'; return; }
+  if (!filtered.length) { tb.innerHTML = '<tr><td colspan="11" class="empty">Aucun bien.</td></tr>'; return; }
   tb.innerHTML = filtered.map(r => {
     const fl = alertFlag(r);
     const flH = fl === 'under' ? ' <span class="flag under">-</span>' : fl === 'over' ? ' <span class="flag over">+</span>' : '';
@@ -732,7 +808,7 @@ function render() {
     const baisseH = isBaisse(r) ? ' <span class="flag baisse">BAISSE</span>' : '';
     const mamadH = (r.ville === 'Tel Aviv' && isMamad(r)) ? ' <span class="flag mamad">MAMAD</span>' : '';
     const villeCls = r.ville === 'Tel Aviv' ? 'ville-tlv' : r.ville === 'Jerusalem' ? 'ville-jeru' : r.ville === 'Bat Yam' ? 'ville-by' : r.ville === 'Holon' ? 'ville-hol' : r.ville === 'Ramat Gan' ? 'ville-rg' : r.ville === 'Givatayim' ? 'ville-giv' : r.ville === 'Rishon LeZion' ? 'ville-rl' : 'ville-ra';
-    return '<tr>' +
+    return '<tr' + (window._crmHighlight && window._crmHighlight.includes(r.id) ? ' class="crm-highlight"' : '') + '>' +
       '<td>' + r.id + newH + baisseH + mamadH + '</td>' +
       '<td><span class="' + villeCls + '">' + (r.ville === 'Tel Aviv' ? 'TLV' : r.ville === 'Jerusalem' ? 'Jeru' : 'RA') + '</span></td>' +
       '<td class="' + (r.type === 'Vente' ? 't-vente' : 't-location') + '">' + escapeHTML(r.type||'') + '</td>' +
@@ -743,6 +819,7 @@ function render() {
       '<td class="right price">' + fmtPrice(r) + '</td>' +
       '<td class="right pm2 ' + pm2Class(r.prix_m2_nis) + '">' + (r.prix_m2_nis ? fmt(r.prix_m2_nis) : '-') + flH + '</td>' +
       '<td><div class="agent">' + escapeHTML(r.agent||'') + '</div><div class="tel">' + escapeHTML(r.telephone||'') + '</div><div style="margin-top:4px">' + buildContactBtns(r) + '</div></td>' +
+      '<td class="crm-cell">' + crmBadge(r.id) + '</td>' +
       '</tr>';
   }).join('');
   document.querySelectorAll('thead th').forEach(th => {
@@ -1861,7 +1938,308 @@ function openWebSearch(platform) {
 
   if (url) window.open(url, '_blank');
 }
+
+/* ═══ CRM MODULE ═══ */
+function _crmClients(){try{return JSON.parse(localStorage.getItem('crm_clients')||'[]')}catch(e){return[]}}
+function _crmStatuses(){try{return JSON.parse(localStorage.getItem('crm_statuses')||'{}')}catch(e){return{}}}
+function _saveCrmClients(c){localStorage.setItem('crm_clients',JSON.stringify(c))}
+function _saveCrmStatuses(s){localStorage.setItem('crm_statuses',JSON.stringify(s))}
+
+var CRM_S={
+  propose:{label:'Proposé',cls:'propose',icon:'\U0001f535'},
+  visite:{label:'Visite',cls:'visite',icon:'\U0001f7e0'},
+  offre:{label:'Offre',cls:'offre',icon:'\U0001f7e3'},
+  vendu:{label:'Vendu',cls:'vendu',icon:'\U0001f534'}
+};
+
+function crmBadge(id){
+  var st=_crmStatuses()[id];
+  if(!st||!st.status||!CRM_S[st.status])
+    return '<button class="crm-add-btn" onclick="openCrmModal('+id+')">+</button>';
+  var s=CRM_S[st.status];
+  return '<span class="crm-badge '+s.cls+'" onclick="openCrmModal('+id+')" title="'+s.label+'">'+s.icon+' '+s.label+'</span>';
+}
+
+var _crmId=null;
+function openCrmModal(id){
+  _crmId=id;
+  var st=_crmStatuses()[id]||{};
+  var rec=records.find(function(r){return r.id===id});
+  document.getElementById('crm-modal-addr').textContent=rec?(rec.adresse||'').replace(/\n/g,' ').substring(0,60):'Bien #'+id;
+  document.getElementById('crm-modal-status').value=st.status||'';
+  document.getElementById('crm-modal-note').value=st.note||'';
+  _renderModalChips(id,st.clients||[]);
+  document.getElementById('crm-modal').classList.add('open');
+}
+function closeCrmModal(){document.getElementById('crm-modal').classList.remove('open');_crmId=null}
+function saveCrmModal(){
+  if(!_crmId)return;
+  var status=document.getElementById('crm-modal-status').value;
+  var note=document.getElementById('crm-modal-note').value.trim();
+  var statuses=_crmStatuses();
+  var prev=statuses[_crmId]||{};
+  if(!status){delete statuses[_crmId]}
+  else{statuses[_crmId]={status:status,note:note,clients:prev.clients||[],updated:new Date().toLocaleDateString('fr-FR')}}
+  _saveCrmStatuses(statuses);
+  closeCrmModal();
+  render();
+  var crmP=document.getElementById('crm');
+  if(crmP&&crmP.classList.contains('active'))renderCRM();
+}
+function _renderModalChips(id,linked){
+  var clients=_crmClients();
+  var sel=document.getElementById('crm-modal-client-sel');
+  sel.innerHTML='<option value="">-- Choisir --</option>'+
+    clients.map(function(c){return'<option value="'+c.id+'">'+escapeHTML(c.prenom+' '+c.nom)+'</option>'}).join('');
+  document.getElementById('crm-modal-chips').innerHTML=linked.map(function(cid){
+    var c=clients.find(function(x){return x.id===cid});if(!c)return'';
+    return'<span class="crm-chip">'+escapeHTML(c.prenom+' '+c.nom)+
+      '<span class="rm" onclick="unlinkClient('+id+',\''+cid+'\')">&#xd7;</span></span>';
+  }).join('');
+}
+function linkModalClient(){
+  var sel=document.getElementById('crm-modal-client-sel');
+  var cid=sel.value;if(!cid||!_crmId)return;
+  var statuses=_crmStatuses();
+  var st=statuses[_crmId]||{status:document.getElementById('crm-modal-status').value||'propose',note:'',clients:[],updated:''};
+  if(!st.clients)st.clients=[];
+  if(st.clients.indexOf(cid)===-1)st.clients.push(cid);
+  statuses[_crmId]=st;
+  _saveCrmStatuses(statuses);
+  _renderModalChips(_crmId,st.clients);
+  sel.value='';
+}
+function unlinkClient(id,cid){
+  var statuses=_crmStatuses();
+  if(!statuses[id])return;
+  statuses[id].clients=(statuses[id].clients||[]).filter(function(x){return x!==cid});
+  _saveCrmStatuses(statuses);
+  _renderModalChips(id,statuses[id].clients||[]);
+}
+function showCrmSubTab(tab){
+  document.querySelectorAll('.crm-sub-tab').forEach(function(t){t.classList.toggle('active',t.dataset.sub===tab)});
+  document.querySelectorAll('.crm-sub-panel').forEach(function(p){p.classList.toggle('active',p.id==='crm-'+tab)});
+  if(tab==='clients')renderCrmClients();
+  if(tab==='pipeline')renderCrmPipeline();
+}
+function renderCRM(){
+  var active=document.querySelector('.crm-sub-tab.active');
+  showCrmSubTab(active?active.dataset.sub:'clients');
+}
+function renderCrmClients(){
+  var clients=_crmClients();
+  var statuses=_crmStatuses();
+  var el=document.getElementById('crm-clients-list');
+  if(!clients.length){el.innerHTML='<p style="color:#94a3b8;font-size:13px;text-align:center;padding:30px 0">Aucun client. Ajoutez-en un avec le bouton ci-dessus.</p>';return}
+  el.innerHTML=clients.map(function(c){
+    var biens=Object.entries(statuses).filter(function(e){return(e[1].clients||[]).indexOf(c.id)!==-1});
+    var budget=[c.budget_min?fmtBudget(c.budget_min):null,c.budget_max?fmtBudget(c.budget_max):null].filter(Boolean).join(' – ')||'Budget NC';
+    var ini=((c.prenom||'?')[0]+(c.nom||'?')[0]).toUpperCase();
+    return'<div class="crm-client-card">'+
+      '<div class="crm-avatar">'+ini+'</div>'+
+      '<div class="crm-card-body">'+
+        '<div class="crm-card-name">'+escapeHTML(c.prenom+' '+c.nom)+'</div>'+
+        '<div class="crm-card-meta">'+
+          (c.tel?'\U0001f4de '+escapeHTML(c.tel)+' · ':'')+budget+
+          (c.pieces_min?' · '+c.pieces_min+'p min':'')+
+          (c.quartiers&&c.quartiers.length?' · '+escapeHTML(c.quartiers.join(', ')):'')+'</div>'+
+        (c.notes?'<div class="crm-card-notes">'+escapeHTML(c.notes)+'</div>':'')+
+        '<div class="crm-card-actions">'+
+          '<button class="crm-cbtn" onclick="editClient(\''+c.id+'\')">Modifier</button>'+
+          '<button class="crm-cbtn" onclick="filterByClient(\''+c.id+'\')">Biens liés ('+biens.length+')</button>'+
+          '<button class="crm-cbtn danger" onclick="deleteClient(\''+c.id+'\')">Supprimer</button>'+
+        '</div>'+
+      '</div></div>';
+  }).join('');
+}
+function fmtBudget(n){
+  if(!n)return'';
+  if(n>=1000000)return(n/1000000).toFixed(n%1000000===0?0:1)+'M';
+  return fmt(n);
+}
+function renderCrmPipeline(){
+  var statuses=_crmStatuses();
+  var clients=_crmClients();
+  var el=document.getElementById('crm-pipeline-board');
+  var cols=['propose','visite','offre','vendu'];
+  el.innerHTML=cols.map(function(status){
+    var s=CRM_S[status];
+    var biens=Object.entries(statuses).filter(function(e){return e[1].status===status});
+    var cards=biens.map(function(entry){
+      var bid=entry[0];var st=entry[1];
+      var r=records.find(function(x){return x.id===parseInt(bid)});if(!r)return'';
+      var linked=(st.clients||[]).map(function(cid){
+        var c=clients.find(function(x){return x.id===cid});return c?c.prenom+' '+c.nom:'?'
+      }).join(', ');
+      return'<div class="crm-pcard" onclick="openCrmModal('+bid+')">'+
+        '<div class="pa">'+escapeHTML((r.adresse||'').replace(/\n/g,' ').substring(0,42))+'</div>'+
+        '<div class="pp">'+fmtPrice(r)+(r.surf_batie_m2?' · '+r.surf_batie_m2+'m²':'')+'</div>'+
+        (linked?'<div class="pc">\U0001f464 '+escapeHTML(linked)+'</div>':'')+
+        (st.note?'<div class="pn">'+escapeHTML(st.note.substring(0,60))+'</div>':'')+
+      '</div>';
+    }).join('');
+    return'<div class="crm-pcol">'+
+      '<div class="crm-pcol-header">'+s.icon+' '+s.label+' <span class="crm-pcount">'+biens.length+'</span></div>'+
+      (cards||'<div style="color:#cbd5e1;font-size:11px;text-align:center;padding:8px">—</div>')+
+    '</div>';
+  }).join('');
+}
+var _editClientId=null;
+function showAddClientForm(id){
+  var form=document.getElementById('crm-add-form');
+  form.classList.add('open');
+  _editClientId=id||null;
+  document.getElementById('crm-form-title').textContent=id?'Modifier le client':'Nouveau client';
+  var c=id?(_crmClients().find(function(x){return x.id===id})||{}):{};
+  document.getElementById('cf-prenom').value=c.prenom||'';
+  document.getElementById('cf-nom').value=c.nom||'';
+  document.getElementById('cf-tel').value=c.tel||'';
+  document.getElementById('cf-email').value=c.email||'';
+  document.getElementById('cf-bmin').value=c.budget_min||'';
+  document.getElementById('cf-bmax').value=c.budget_max||'';
+  document.getElementById('cf-pmin').value=c.pieces_min||'';
+  document.getElementById('cf-pmax').value=c.pieces_max||'';
+  document.getElementById('cf-quartiers').value=(c.quartiers||[]).join(', ');
+  document.getElementById('cf-notes').value=c.notes||'';
+  form.scrollIntoView({behavior:'smooth'});
+}
+function hideAddClientForm(){document.getElementById('crm-add-form').classList.remove('open');_editClientId=null}
+function saveClient(){
+  var prenom=document.getElementById('cf-prenom').value.trim();
+  var nom=document.getElementById('cf-nom').value.trim();
+  if(!prenom&&!nom){alert('Entrez au moins un nom.');return}
+  var clients=_crmClients();
+  var quartiers=document.getElementById('cf-quartiers').value.split(',').map(function(x){return x.trim()}).filter(Boolean);
+  var prevC=_editClientId?clients.find(function(x){return x.id===_editClientId}):null;
+  var c={
+    id:_editClientId||('c_'+Date.now()),
+    prenom:prenom,nom:nom,
+    tel:document.getElementById('cf-tel').value.trim(),
+    email:document.getElementById('cf-email').value.trim(),
+    budget_min:parseInt(document.getElementById('cf-bmin').value)||null,
+    budget_max:parseInt(document.getElementById('cf-bmax').value)||null,
+    pieces_min:parseFloat(document.getElementById('cf-pmin').value)||null,
+    pieces_max:parseFloat(document.getElementById('cf-pmax').value)||null,
+    quartiers:quartiers,
+    notes:document.getElementById('cf-notes').value.trim(),
+    created:prevC?prevC.created:new Date().toLocaleDateString('fr-FR')
+  };
+  if(_editClientId){
+    var i=clients.findIndex(function(x){return x.id===_editClientId});
+    if(i>=0)clients[i]=c;else clients.push(c);
+  }else clients.push(c);
+  _saveCrmClients(clients);
+  hideAddClientForm();
+  renderCrmClients();
+}
+function editClient(id){showAddClientForm(id)}
+function deleteClient(id){
+  if(!confirm('Supprimer ce client ?'))return;
+  _saveCrmClients(_crmClients().filter(function(c){return c.id!==id}));
+  var st=_crmStatuses();
+  Object.values(st).forEach(function(s){s.clients=(s.clients||[]).filter(function(cid){return cid!==id})});
+  _saveCrmStatuses(st);
+  renderCrmClients();
+}
+function filterByClient(cid){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.panel==='search')});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('active',p.id==='search')});
+  var statuses=_crmStatuses();
+  window._crmHighlight=Object.entries(statuses)
+    .filter(function(e){return(e[1].clients||[]).indexOf(cid)!==-1})
+    .map(function(e){return parseInt(e[0])});
+  render();
+  var c=_crmClients().find(function(x){return x.id===cid});
+  var banner=document.getElementById('crm-banner');
+  if(banner&&c){
+    banner.innerHTML='\U0001f464 Biens liés à <strong>'+escapeHTML(c.prenom+' '+c.nom)+
+      '</strong> ('+window._crmHighlight.length+' bien'+(window._crmHighlight.length>1?'s':'')+')'
+      +'  <span style="cursor:pointer;font-weight:700;font-size:15px" onclick="clearCrmFilter()">×</span>';
+    banner.className='show';
+    var tbl=document.getElementById('tbl');
+    if(tbl&&tbl.parentNode)tbl.parentNode.insertBefore(banner,tbl);
+  }
+}
+function clearCrmFilter(){
+  window._crmHighlight=null;
+  var b=document.getElementById('crm-banner');if(b){b.style.display='none';b.className=''}
+  render();
+}
+
 </script>
+
+
+<div class="panel" id="crm">
+  <div class="crm-sub-nav">
+    <div class="crm-sub-tab active" data-sub="clients" onclick="showCrmSubTab('clients')">👤 Clients</div>
+    <div class="crm-sub-tab" data-sub="pipeline" onclick="showCrmSubTab('pipeline')">📊 Pipeline</div>
+  </div>
+  <div class="crm-sub-panel active" id="crm-clients">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:13px;color:#64748b">Clients et biens associés</div>
+      <button class="crm-cbtn primary" onclick="showAddClientForm(null)">+ Nouveau client</button>
+    </div>
+    <div id="crm-add-form">
+      <p id="crm-form-title">Nouveau client</p>
+      <div class="crm-fgrid">
+        <div class="crm-ff"><label>Prénom</label><input id="cf-prenom" type="text" placeholder="Prénom"></div>
+        <div class="crm-ff"><label>Nom</label><input id="cf-nom" type="text" placeholder="Nom"></div>
+        <div class="crm-ff"><label>Téléphone</label><input id="cf-tel" type="text" placeholder="05X-XXX-XXXX"></div>
+        <div class="crm-ff"><label>Email</label><input id="cf-email" type="email" placeholder="email@..."></div>
+        <div class="crm-ff"><label>Budget min (₪)</label><input id="cf-bmin" type="number" placeholder="ex: 3000000"></div>
+        <div class="crm-ff"><label>Budget max (₪)</label><input id="cf-bmax" type="number" placeholder="ex: 6000000"></div>
+        <div class="crm-ff"><label>Pièces min</label><input id="cf-pmin" type="number" step="0.5" placeholder="ex: 3"></div>
+        <div class="crm-ff"><label>Pièces max</label><input id="cf-pmax" type="number" step="0.5" placeholder="ex: 5"></div>
+        <div class="crm-ff full"><label>Quartiers recherchés</label><input id="cf-quartiers" type="text" placeholder="ex: Neve Tsedek, Florentin (séparés par virgule)"></div>
+        <div class="crm-ff full"><label>Notes</label><textarea id="cf-notes" placeholder="Critères importants, remarques..."></textarea></div>
+        <div class="crm-factions">
+          <button class="crm-fsave" onclick="saveClient()">💾 Enregistrer</button>
+          <button class="crm-fcancel" onclick="hideAddClientForm()">Annuler</button>
+        </div>
+      </div>
+    </div>
+    <div id="crm-clients-list"></div>
+  </div>
+  <div class="crm-sub-panel" id="crm-pipeline">
+    <div style="margin-bottom:14px;font-size:13px;color:#64748b">Biens par étape de transaction</div>
+    <div class="crm-pipeline" id="crm-pipeline-board"></div>
+  </div>
+</div>
+
+<div id="crm-modal" onclick="if(event.target===this)closeCrmModal()">
+  <div id="crm-modal-box">
+    <h3>Statut CRM</h3>
+    <div id="crm-modal-addr"></div>
+    <div class="crm-mrow">
+      <label>Étape</label>
+      <select id="crm-modal-status">
+        <option value="">— Disponible (aucun statut) —</option>
+        <option value="propose">🔵 Proposé</option>
+        <option value="visite">🟠 Visite</option>
+        <option value="offre">🟣 Offre</option>
+        <option value="vendu">🔴 Vendu</option>
+      </select>
+    </div>
+    <div class="crm-mrow">
+      <label>Lier un client</label>
+      <div style="display:flex;gap:8px">
+        <select id="crm-modal-client-sel" style="flex:1"></select>
+        <button class="crm-cbtn primary" onclick="linkModalClient()">+ Lier</button>
+      </div>
+      <div class="crm-client-chips" id="crm-modal-chips"></div>
+    </div>
+    <div class="crm-mrow">
+      <label>Note</label>
+      <textarea id="crm-modal-note" placeholder="Feedback visite, remarques..."></textarea>
+    </div>
+    <div class="crm-m-btns">
+      <button class="crm-m-save" onclick="saveCrmModal()">💾 Enregistrer</button>
+      <button class="crm-m-cancel" onclick="closeCrmModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div id="crm-banner"></div>
 
 </body>
 </html>
