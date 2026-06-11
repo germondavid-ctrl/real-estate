@@ -816,13 +816,40 @@ function reset() {
 }
 document.getElementById('f-ville').addEventListener('change', () => { rebuildQuartierSelect(); applyFilters(); });
 function exportCSV() {
-  const h = ['#','Ville','Type','Adresse','Quartier','Pièces','Surface','Prix','Prix/m²','Agent','Tél','Source'];
+  const h = ['#','Ville','Type','Adresse','Quartier','Pièces','Surf.bâtie','Balcon/Jardin','Surf.pondérée','Prix (₪)','Prix/m² (₪)','Agent','Téléphone','Date entrée','Source','Note'];
   const lines = [h.join(';')];
   filtered.forEach(r => {
-    lines.push([r.id, r.ville, r.type, (r.adresse||'').replace(/\n/g, ' | '), r.quartier, r.pieces, r.surf_batie_m2 ?? '', r.prix_nis ?? '', r.prix_m2_nis ?? '', r.agent, r.telephone, r.source].map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(';'));
+    const row = [
+      r.id, r.ville, r.type,
+      (r.adresse||'').replace(/\n/g,' | '),
+      r.quartier, r.pieces,
+      r.surf_batie_m2 ?? '',
+      r.balcon_jardin_m2 ?? '',
+      r.surf_ponderee_m2 ?? '',
+      r.prix_nis ?? '',
+      r.prix_m2_nis ?? '',
+      r.agent ?? '', r.telephone ?? '',
+      r.date_entree ?? '',
+      r.source ?? '',
+      (r.note||'').replace(/\n/g,' | ')
+    ];
+    lines.push(row.map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(';'));
   });
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2,'0');
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const yy = today.getFullYear();
+  const villeEl = document.getElementById('f-ville');
+  const villeVal = villeEl ? villeEl.value : '';
+  const villeSlug = villeVal ? '_' + villeVal.replace(/[^a-zA-Z]/g,'').toLowerCase() : '';
+  const fname = 'recherche' + villeSlug + '_' + filtered.length + 'biens_' + dd + mm + yy + '.csv';
   const blob = new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'recherche_unifiee.csv'; a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+  let toast = document.getElementById('csv-toast');
+  if (!toast) { toast = document.createElement('div'); toast.id = 'csv-toast'; toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1e293b;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s'; document.body.appendChild(toast); }
+  toast.textContent = '✅ ' + filtered.length + ' biens exportés → ' + fname;
+  toast.style.opacity = '1';
+  setTimeout(() => { toast.style.opacity = '0'; }, 3500);
 }
 document.querySelectorAll('thead th').forEach(th => th.addEventListener('click', () => {
   if (sortKey === th.dataset.k) sortAsc = !sortAsc;
