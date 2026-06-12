@@ -376,7 +376,7 @@ tr.crm-highlight{background:#eff6ff !important}
     <div class="f-group"><label data-i18n="lbl.ville">Ville</label>
       <select id="f-ville"><option value="">Toutes</option><option>Tel Aviv</option><option>Jerusalem</option><option>Ra'anana</option><option>Ramat Gan</option><option>Kfar Saba</option><option>Bat Yam</option><option>Holon</option><option>Givatayim</option><option>Rishon LeZion</option></select>
     </div>
-    <div class="f-group"><label data-i18n="lbl.search">Recherche libre</label><input id="q" type="search" placeholder="Adresse, agent, mots-clés..." data-i18n-ph="ph.q"></div>
+    <div class="f-group"><label data-i18n="lbl.search">Recherche libre</label><input id="q" type="search" dir="auto" placeholder="Adresse, agent, nom en hébreu..." data-i18n-ph="ph.q"></div>
     <div class="f-group"><label data-i18n="lbl.type">Type</label>
       <select id="f-type"><option value="" data-i18n="opt.tous">Tous</option><option data-i18n="opt.vente">Vente</option><option data-i18n="opt.loc">Location</option><option value="Penthouse" data-i18n="opt.ph">Penthouse</option><option value="Jardin" data-i18n="opt.jardin">Avec jardin</option><option value="Mamad" data-i18n="opt.mamad">Avec mamad</option><option value="Vue mer" data-i18n="opt.vmer">Vue mer</option></select>
     </div>
@@ -708,7 +708,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 function getF() {
   return {
     ville: document.getElementById('f-ville').value,
-    q: document.getElementById('q').value.trim().toLowerCase(),
+    q: normalizeSearch(document.getElementById('q').value.trim()),
     type: document.getElementById('f-type').value,
     quartier: [...selectedQuartiers],
     pieces: [...selectedPieces],
@@ -753,7 +753,7 @@ function applyFilters() {
       for (const eq of f.equip) { if (!hasEquip(r, eq)) return false; }
     }
     if (f.q) {
-      const txt = (r.adresse + ' ' + r.quartier + ' ' + r.agent + ' ' + r.telephone + ' ' + (r.caracteristiques || '')).toLowerCase();
+      const txt = normalizeSearch(r.adresse + ' ' + r.quartier + ' ' + r.agent + ' ' + r.telephone + ' ' + (r.caracteristiques || '') + ' ' + (r.note || '') + ' ' + (r.source || ''));
       if (!txt.includes(f.q)) return false;
     }
     return true;
@@ -2613,6 +2613,12 @@ function matchingBiensWithProx(c) {
   return base.filter(function(r) { return proxMatch(r, pf); });
 }
 
+
+/* Normalize Hebrew search query: strip niqqud (vowel marks U+05B0–U+05C7) */
+function normalizeSearch(s) {
+  return s.replace(/[\u05B0-\u05C7]/g, '').toLowerCase();
+}
+
 </script>
 
 
@@ -2678,7 +2684,7 @@ function matchingBiensWithProx(c) {
             <label class="crm-equip-chk"><input type="checkbox" id="ceq-lumineux"> ☀ Lumineux</label>
           </div>
         </div>
-        <div class="crm-ff full"><label>Notes</label><textarea id="cf-notes" placeholder="Critères importants, remarques..."></textarea></div>
+        <div class="crm-ff full"><label>Notes</label><textarea id="cf-notes" dir="auto" placeholder="Critères importants, remarques..."></textarea></div>
         <div class="crm-factions">
           <button class="crm-fsave" onclick="saveClient()">💾 Enregistrer</button>
           <button class="crm-fcancel" onclick="hideAddClientForm()">Annuler</button>
