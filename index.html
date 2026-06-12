@@ -2139,6 +2139,23 @@ function showAddClientForm(id){
     _geoCache[c.geo_addr]={lat:c.geo_lat,lng:c.geo_lng,display:c.geo_addr};
     if(_geoSt){_geoSt.textContent='\uD83D\uDCCD '+c.geo_addr;_geoSt.className='ok';}
   }
+  var _equip=c.equip||[];
+  document.getElementById('ceq-parking').checked=_equip.indexOf('parking')>-1;
+  document.getElementById('ceq-ascenseur').checked=_equip.indexOf('ascenseur')>-1;
+  document.getElementById('ceq-balcon').checked=_equip.indexOf('balcon')>-1;
+  document.getElementById('ceq-terrasse').checked=_equip.indexOf('terrasse')>-1;
+  document.getElementById('ceq-jardin').checked=_equip.indexOf('jardin')>-1;
+  document.getElementById('ceq-mamad').checked=_equip.indexOf('mamad')>-1;
+  document.getElementById('ceq-piscine').checked=_equip.indexOf('piscine')>-1;
+  document.getElementById('ceq-vue_mer').checked=_equip.indexOf('vue_mer')>-1;
+  document.getElementById('ceq-vue_degagee').checked=_equip.indexOf('vue_degagee')>-1;
+  document.getElementById('ceq-renovee').checked=_equip.indexOf('renovee')>-1;
+  document.getElementById('ceq-calme').checked=_equip.indexOf('calme')>-1;
+  document.getElementById('ceq-etage_eleve').checked=_equip.indexOf('etage_eleve')>-1;
+  document.getElementById('ceq-shabbat').checked=_equip.indexOf('shabbat')>-1;
+  document.getElementById('ceq-kosher').checked=_equip.indexOf('kosher')>-1;
+  document.getElementById('ceq-securise').checked=_equip.indexOf('securise')>-1;
+  document.getElementById('ceq-vue_ville').checked=_equip.indexOf('vue_ville')>-1;
   form.scrollIntoView({behavior:'smooth'});
   liveMatchPreview();
 }
