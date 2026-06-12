@@ -314,6 +314,22 @@ tr.crm-highlight{background:#eff6ff !important}
 #crm-banner{background:#dbeafe;border:1px solid #bfdbfe;padding:8px 14px;border-radius:7px;font-size:13px;color:#1d4ed8;margin-bottom:10px;display:none;align-items:center;justify-content:space-between}
 #crm-banner.show{display:flex}
 
+
+/* === CRM LIVE MATCHING === */
+#crm-live-preview{margin-top:16px;border-top:1px solid var(--border);padding-top:14px;display:none}
+#crm-live-preview.has-criteria{display:block}
+.crm-preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.crm-preview-title{font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px}
+.crm-preview-count{font-size:12px;font-weight:700;color:var(--primary)}
+.crm-preview-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:7px 10px;background:#f8fafc;border-radius:6px;margin-bottom:5px;border:1px solid var(--border);cursor:pointer;transition:border-color .15s}
+.crm-preview-row:hover{border-color:var(--primary);background:#eff6ff}
+.crm-preview-addr{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crm-preview-info{font-size:11px;color:#64748b;white-space:nowrap}
+.crm-preview-price{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap}
+.crm-preview-more{text-align:center;font-size:11px;color:var(--primary);font-weight:600;cursor:pointer;padding:6px;border-radius:6px;margin-top:4px}
+.crm-preview-more:hover{background:#eff6ff}
+.crm-preview-empty{font-size:12px;color:#94a3b8;text-align:center;padding:12px 0}
+
 </style>
 </head>
 <body>
@@ -2104,8 +2120,14 @@ function showAddClientForm(id){
   document.getElementById('cf-quartiers').value=(c.quartiers||[]).join(', ');
   document.getElementById('cf-notes').value=c.notes||'';
   form.scrollIntoView({behavior:'smooth'});
+  liveMatchPreview();
 }
-function hideAddClientForm(){document.getElementById('crm-add-form').classList.remove('open');_editClientId=null}
+function hideAddClientForm(){
+  document.getElementById('crm-add-form').classList.remove('open');
+  var p=document.getElementById('crm-live-preview');
+  if(p)p.classList.remove('has-criteria');
+  _editClientId=null;
+}
 function saveClient(){
   var prenom=document.getElementById('cf-prenom').value.trim();
   var nom=document.getElementById('cf-nom').value.trim();
@@ -2267,6 +2289,88 @@ function filterByClientCriteria(cid) {
   }
 }
 
+
+/* === LIVE MATCH PREVIEW === */
+function _readFormCriteria() {
+  return {
+    budget_min: parseInt(document.getElementById('cf-bmin').value) || null,
+    budget_max: parseInt(document.getElementById('cf-bmax').value) || null,
+    pieces_min: parseFloat(document.getElementById('cf-pmin').value) || null,
+    pieces_max: parseFloat(document.getElementById('cf-pmax').value) || null,
+    quartiers: (document.getElementById('cf-quartiers').value || '').split(',').map(function(x){return x.trim()}).filter(Boolean)
+  };
+}
+
+function liveMatchPreview() {
+  var c = _readFormCriteria();
+  var preview = document.getElementById('crm-live-preview');
+  var listEl = document.getElementById('crm-preview-list');
+  var countEl = document.getElementById('crm-preview-count');
+  var moreEl = document.getElementById('crm-preview-more');
+  if (!preview || !listEl) return;
+
+  var hasCriteria = c.budget_min || c.budget_max || c.pieces_min || c.pieces_max || c.quartiers.length;
+  if (!hasCriteria) {
+    preview.classList.remove('has-criteria');
+    return;
+  }
+  preview.classList.add('has-criteria');
+
+  var matches = matchingBiens(c);
+  var n = matches.length;
+  if (countEl) countEl.textContent = n + ' bien' + (n > 1 ? 's' : '');
+
+  var MAX_SHOWN = 8;
+  var shown = matches.slice(0, MAX_SHOWN);
+
+  if (!n) {
+    listEl.innerHTML = '<div class="crm-preview-empty">Aucun bien ne correspond &agrave; ces crit&egrave;res</div>';
+    if (moreEl) moreEl.style.display = 'none';
+    return;
+  }
+
+  listEl.innerHTML = shown.map(function(r) {
+    var addr = (r.adresse || '').replace(/\n/g, ' ').substring(0, 45);
+    var info = [
+      r.pieces ? r.pieces + 'p' : null,
+      r.surf_batie_m2 ? r.surf_batie_m2 + 'm²' : null,
+      r.quartier || null
+    ].filter(Boolean).join(' · ');
+    var price = fmtPrice(r);
+    return '<div class="crm-preview-row" onclick="openCrmModal(' + r.id + ')">'
+      + '<div class="crm-preview-addr">' + escapeHTML(addr) + '</div>'
+      + '<div class="crm-preview-info">' + escapeHTML(info) + '</div>'
+      + '<div class="crm-preview-price">' + price + '</div>'
+      + '</div>';
+  }).join('');
+
+  if (moreEl) {
+    if (n > MAX_SHOWN) {
+      moreEl.textContent = 'Voir les ' + n + ' biens dans le tableau →';
+      moreEl.style.display = 'block';
+    } else {
+      moreEl.style.display = 'none';
+    }
+  }
+}
+
+function showAllLiveMatches() {
+  var c = _readFormCriteria();
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.toggle('active', t.dataset.panel === 'search'); });
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.toggle('active', p.id === 'search'); });
+  window._crmHighlight = matchingBiens(c).map(function(r) { return r.id; });
+  render();
+  var banner = document.getElementById('crm-banner');
+  var n = window._crmHighlight.length;
+  if (banner) {
+    banner.innerHTML = '&#128269; Prévisualisation critères : <strong>' + n + ' bien' + (n > 1 ? 's' : '') + ' correspondent</strong>'
+      + ' &nbsp;<span style="cursor:pointer;font-weight:700;font-size:15px" onclick="clearCrmFilter()">&#215;</span>';
+    banner.className = 'show';
+    var tbl = document.getElementById('tbl');
+    if (tbl && tbl.parentNode) tbl.parentNode.insertBefore(banner, tbl);
+  }
+}
+
 </script>
 
 
@@ -2287,16 +2391,24 @@ function filterByClientCriteria(cid) {
         <div class="crm-ff"><label>Nom</label><input id="cf-nom" type="text" placeholder="Nom"></div>
         <div class="crm-ff"><label>Téléphone</label><input id="cf-tel" type="text" placeholder="05X-XXX-XXXX"></div>
         <div class="crm-ff"><label>Email</label><input id="cf-email" type="email" placeholder="email@..."></div>
-        <div class="crm-ff"><label>Budget min (₪)</label><input id="cf-bmin" type="number" placeholder="ex: 3000000"></div>
-        <div class="crm-ff"><label>Budget max (₪)</label><input id="cf-bmax" type="number" placeholder="ex: 6000000"></div>
-        <div class="crm-ff"><label>Pièces min</label><input id="cf-pmin" type="number" step="0.5" placeholder="ex: 3"></div>
-        <div class="crm-ff"><label>Pièces max</label><input id="cf-pmax" type="number" step="0.5" placeholder="ex: 5"></div>
-        <div class="crm-ff full"><label>Quartiers recherchés</label><input id="cf-quartiers" type="text" placeholder="ex: Neve Tsedek, Florentin (séparés par virgule)"></div>
+        <div class="crm-ff"><label>Budget min (₪)</label><input id="cf-bmin" type="number" oninput="liveMatchPreview()" placeholder="ex: 3000000"></div>
+        <div class="crm-ff"><label>Budget max (₪)</label><input id="cf-bmax" type="number" oninput="liveMatchPreview()" placeholder="ex: 6000000"></div>
+        <div class="crm-ff"><label>Pièces min</label><input id="cf-pmin" type="number" oninput="liveMatchPreview()" step="0.5" placeholder="ex: 3"></div>
+        <div class="crm-ff"><label>Pièces max</label><input id="cf-pmax" type="number" oninput="liveMatchPreview()" step="0.5" placeholder="ex: 5"></div>
+        <div class="crm-ff full"><label>Quartiers recherchés</label><input id="cf-quartiers" type="text" oninput="liveMatchPreview()" placeholder="ex: Neve Tsedek, Florentin (séparés par virgule)"></div>
         <div class="crm-ff full"><label>Notes</label><textarea id="cf-notes" placeholder="Critères importants, remarques..."></textarea></div>
         <div class="crm-factions">
           <button class="crm-fsave" onclick="saveClient()">💾 Enregistrer</button>
           <button class="crm-fcancel" onclick="hideAddClientForm()">Annuler</button>
         </div>
+      </div>
+      <div id="crm-live-preview">
+        <div class="crm-preview-header">
+          <span class="crm-preview-title">💡 Biens correspondants</span>
+          <span class="crm-preview-count" id="crm-preview-count"></span>
+        </div>
+        <div id="crm-preview-list"></div>
+        <div class="crm-preview-more" id="crm-preview-more" onclick="showAllLiveMatches()" style="display:none">Voir tous dans le tableau →</div>
       </div>
     </div>
     <div id="crm-clients-list"></div>
