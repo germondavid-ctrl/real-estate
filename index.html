@@ -349,6 +349,10 @@ tr.crm-highlight{background:#eff6ff !important}
 .crm-equip-chk:hover{color:#1e40af}
 .crm-equip-tag{display:inline-flex;align-items:center;gap:3px;background:#dbeafe;color:#1d4ed8;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap}
 
+
+.lang-btn.active { background:rgba(255,255,255,.35) !important; border-color:white !important; font-weight:900; }
+.lang-btn { transition: all .2s; }
+
 </style>
 </head>
 <body>
@@ -832,6 +836,9 @@ function isBaisse(r) {
   const carac = (r.caracteristiques || '').toLowerCase();
   return note.includes('baisse') || note.includes('mà') || carac.includes('baisse');
 }
+// Stub crmBadge — remplacé par l'implémentation réelle dans bloc CRM
+if (typeof crmBadge === 'undefined') { var crmBadge = function(id) { return ''; }; }
+
 function render() {
   const tb = document.getElementById('tbody');
   if (!filtered.length) { tb.innerHTML = '<tr><td colspan="11" class="empty">Aucun bien.</td></tr>'; return; }
@@ -1599,7 +1606,13 @@ function tr(k){ return (I18N[i18nLang]||{})[k] || (I18N.fr||{})[k] || k; }
 function applyLang(lang) {
   i18nLang = lang;
   var L = I18N[lang] || I18N.fr;
-  document.documentElement.setAttribute('dir', L.dir||'ltr');
+  // RTL uniquement sur les éléments UI, pas sur les données du tableau
+  document.getElementById('navbar') && document.getElementById('navbar').setAttribute('dir', L.dir||'ltr');
+  document.querySelectorAll('.f-group label, .tab, .btn, .section h2, .lang-btn').forEach(function(el){
+    el.setAttribute('dir', L.dir||'ltr');
+  });
+  // L'input de recherche garde dir=auto
+  var qEl = document.getElementById('q'); if(qEl) qEl.setAttribute('dir','auto');
   document.querySelectorAll('[data-i18n]').forEach(function(el){
     var k=el.getAttribute('data-i18n'); if(L[k]!==undefined) el.textContent=L[k];
   });
@@ -1626,12 +1639,14 @@ function applyLang(lang) {
   var bf=document.getElementById('btn-fr'), bh=document.getElementById('btn-he');
   if(bf) bf.className='lang-btn'+(lang==='fr'?' active':'');
   if(bh) bh.className='lang-btn'+(lang==='he'?' active':'');
-  updateBar(); try{renderKPIs();}catch(e){} try{render();}catch(e){}
+  try{updateBar();}catch(e){} try{renderKPIs();}catch(e){} try{render();}catch(e){}
 }
 function wireLangButtons(){
+  // Les boutons ont déjà onclick= dans le HTML — pas besoin d'addEventListener
+  // On se contente de marquer l'état actif
   var bf=document.getElementById('btn-fr'), bh=document.getElementById('btn-he');
-  if(bf&&!bf._w){bf._w=1;bf.addEventListener('click',function(){applyLang('fr');});}
-  if(bh&&!bh._w){bh._w=1;bh.addEventListener('click',function(){applyLang('he');});}
+  if(bf) bf.className='lang-btn active';
+  if(bh) bh.className='lang-btn';
 }
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',function(){wireLangButtons();applyLang('fr');});
