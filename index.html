@@ -340,6 +340,15 @@ tr.crm-highlight{background:#eff6ff !important}
 #cf-geo-status.err{color:#dc2626}
 #cf-geo-status.loading{color:#64748b}
 
+
+/* === ÉQUIPEMENTS CLIENT === */
+.crm-equip-label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;display:block}
+.crm-equip-grid{display:flex;flex-wrap:wrap;gap:6px 14px}
+.crm-equip-chk{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;font-size:13px;color:#334155}
+.crm-equip-chk input{width:14px;height:14px;cursor:pointer;accent-color:#3b82f6}
+.crm-equip-chk:hover{color:#1e40af}
+.crm-equip-tag{display:inline-flex;align-items:center;gap:3px;background:#dbeafe;color:#1d4ed8;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap}
+
 </style>
 </head>
 <body>
@@ -2154,6 +2163,8 @@ function showAddClientForm(id){
   document.getElementById('ceq-etage_eleve').checked=_equip.indexOf('etage_eleve')>-1;
   document.getElementById('ceq-shabbat').checked=_equip.indexOf('shabbat')>-1;
   document.getElementById('ceq-kosher').checked=_equip.indexOf('kosher')>-1;
+  document.getElementById('ceq-cave').checked=_equip.indexOf('cave')>-1;
+  document.getElementById('ceq-lumineux').checked=_equip.indexOf('lumineux')>-1;
   document.getElementById('ceq-securise').checked=_equip.indexOf('securise')>-1;
   document.getElementById('ceq-vue_ville').checked=_equip.indexOf('vue_ville')>-1;
   form.scrollIntoView({behavior:'smooth'});
@@ -2187,6 +2198,7 @@ function saveClient(){
     geo_radius:parseInt(document.getElementById('cf-geo-radius').value)||null,
     geo_lat:(function(){var a=document.getElementById('cf-geo-addr').value.trim();return a&&_geoCache[a]?_geoCache[a].lat:null})(),
     geo_lng:(function(){var a=document.getElementById('cf-geo-addr').value.trim();return a&&_geoCache[a]?_geoCache[a].lng:null})(),
+    equip:["parking", "ascenseur", "balcon", "terrasse", "jardin", "cave", "mamad", "piscine", "vue_mer", "vue_degagee", "vue_ville", "renovee", "calme", "etage_eleve", "shabbat", "kosher", "securise", "lumineux"].reduce(function(a,k){var el=document.getElementById('ceq-'+k);if(el&&el.checked)a.push(k);return a;}, []),
     created:prevC?prevC.created:new Date().toLocaleDateString('fr-FR')
   };
   if(_editClientId){
@@ -2641,6 +2653,29 @@ function matchingBiensWithProx(c) {
               <option value="1000">1 km</option>
               <option value="2000">2 km</option>
             </select>
+          </div>
+        </div>
+        <div class="crm-ff full" style="margin-top:2px">
+          <span class="crm-equip-label">Équipements exigés</span>
+          <div class="crm-equip-grid">
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-parking"> 🚗 Parking</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-ascenseur"> 🛗 Ascenseur</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-balcon"> 🌿 Balcon</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-terrasse"> ☀️ Terrasse</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-jardin"> 🌳 Jardin</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-cave"> 🏚 Cave / Stockage</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-mamad"> 🛡 Mamad</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-piscine"> 🏊 Piscine</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-vue_mer"> 🌊 Vue mer</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-vue_degagee"> 🏙 Vue dégagée</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-vue_ville"> 🏘 Vue ville</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-renovee"> ✨ Rénovée</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-calme"> 🔇 Quartier calme</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-etage_eleve"> ⬆️ Étage élevé</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-shabbat"> ✡️ Ascenseur Shabbat</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-kosher"> 🕍 Cuisine Kosher</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-securise"> 🔐 Résidence gardée</label>
+            <label class="crm-equip-chk"><input type="checkbox" id="ceq-lumineux"> ☀ Lumineux</label>
           </div>
         </div>
         <div class="crm-ff full"><label>Notes</label><textarea id="cf-notes" placeholder="Critères importants, remarques..."></textarea></div>
