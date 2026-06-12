@@ -2187,11 +2187,28 @@ function filterByClient(cid){
 function clearCrmFilter(){
   window._crmHighlight=null;
   var b=document.getElementById('crm-banner');if(b){b.style.display='none';b.className=''}
+  // Restaurer le filtre principal
+  if(typeof applyFilters==='function') applyFilters();
   render();
 }
 
 
 /* === CRM MATCHING === */
+function _quartiersMatch(clientQuartiers, propQuartier) {
+  if (!clientQuartiers || !clientQuartiers.length) return true;
+  if (!propQuartier) return false;
+  var pq = propQuartier.toLowerCase();
+  // Tokens du quartier bien (mots >=3 chars, ex: "Ben Gourion" -> ["ben","gourion"])
+  var pqWords = pq.split(/[\s\-\/,]+/).filter(function(w) { return w.length >= 3; });
+  return clientQuartiers.some(function(cq) {
+    var cql = cq.toLowerCase();
+    // 1. match direct (pour noms exacts comma-separated genre "Neve Tsedek")
+    if (pq.indexOf(cql) !== -1 || cql.indexOf(pq) !== -1) return true;
+    // 2. token : un mot du quartier bien apparait dans la description client
+    return pqWords.some(function(word) { return cql.indexOf(word) !== -1; });
+  });
+}
+
 function matchingClients(r) {
   return _crmClients().filter(function(c) {
     if (c.budget_max && r.prix_nis && r.prix_nis > c.budget_max) return false;
@@ -2199,12 +2216,7 @@ function matchingClients(r) {
     if (c.pieces_min != null && r.pieces != null && r.pieces < c.pieces_min) return false;
     if (c.pieces_max != null && r.pieces != null && r.pieces > c.pieces_max) return false;
     if (c.quartiers && c.quartiers.length && r.quartier) {
-      var q = r.quartier.toLowerCase();
-      var ok = c.quartiers.some(function(cq) {
-        var cql = cq.toLowerCase();
-        return q.indexOf(cql) !== -1 || cql.indexOf(q) !== -1;
-      });
-      if (!ok) return false;
+      if (!_quartiersMatch(c.quartiers, r.quartier)) return false;
     }
     return true;
   });
@@ -2217,12 +2229,7 @@ function matchingBiens(c) {
     if (c.pieces_min != null && r.pieces != null && r.pieces < c.pieces_min) return false;
     if (c.pieces_max != null && r.pieces != null && r.pieces > c.pieces_max) return false;
     if (c.quartiers && c.quartiers.length && r.quartier) {
-      var q = r.quartier.toLowerCase();
-      var ok = c.quartiers.some(function(cq) {
-        var cql = cq.toLowerCase();
-        return q.indexOf(cql) !== -1 || cql.indexOf(q) !== -1;
-      });
-      if (!ok) return false;
+      if (!_quartiersMatch(c.quartiers, r.quartier)) return false;
     }
     return true;
   });
@@ -2273,15 +2280,29 @@ function quickLinkClient(bid, cid) {
 function filterByClientCriteria(cid) {
   var c = _crmClients().find(function(x) { return x.id === cid; });
   if (!c) return;
+  // Basculer sur l'onglet recherche
   document.querySelectorAll('.tab').forEach(function(t) { t.classList.toggle('active', t.dataset.panel === 'search'); });
   document.querySelectorAll('.panel').forEach(function(p) { p.classList.toggle('active', p.id === 'search'); });
-  window._crmHighlight = matchingBiens(c).map(function(r) { return r.id; });
+  // Filtrer filtered directement (pas juste highlight)
+  var matches = matchingBiens(c);
+  filtered = matches;
+  window._crmHighlight = null; // pas besoin du highlight si on filtre
   render();
   var banner = document.getElementById('crm-banner');
   if (banner) {
-    var n = window._crmHighlight.length;
-    banner.innerHTML = '&#128269; Matching auto &mdash; <strong>' + escapeHTML(c.prenom + ' ' + c.nom) + '</strong> : '
-      + n + ' bien' + (n > 1 ? 's' : '') + ' correspondent'
+    var n = matches.length;
+    var budget = [
+      c.budget_min ? fmtBudget(c.budget_min) + 'M' : null,
+      c.budget_max ? fmtBudget(c.budget_max) + 'M' : null
+    ].filter(Boolean).join('–');
+    var criteria = [
+      budget ? budget + ' &#8362;' : null,
+      c.pieces_min ? c.pieces_min + 'p+' : null,
+      c.quartiers && c.quartiers.length ? c.quartiers.join(', ') : null
+    ].filter(Boolean).join(' &middot; ');
+    banner.innerHTML = '&#128269; <strong>' + escapeHTML(c.prenom + ' ' + c.nom) + '</strong>'
+      + (criteria ? ' &mdash; ' + criteria : '')
+      + ' &mdash; <strong>' + n + ' bien' + (n > 1 ? 's' : '') + '</strong>'
       + ' &nbsp;<span style="cursor:pointer;font-weight:700;font-size:15px" onclick="clearCrmFilter()">&#215;</span>';
     banner.className = 'show';
     var tbl = document.getElementById('tbl');
@@ -2358,7 +2379,8 @@ function showAllLiveMatches() {
   var c = _readFormCriteria();
   document.querySelectorAll('.tab').forEach(function(t) { t.classList.toggle('active', t.dataset.panel === 'search'); });
   document.querySelectorAll('.panel').forEach(function(p) { p.classList.toggle('active', p.id === 'search'); });
-  window._crmHighlight = matchingBiens(c).map(function(r) { return r.id; });
+  filtered = matchingBiens(c);
+  window._crmHighlight = null;
   render();
   var banner = document.getElementById('crm-banner');
   var n = window._crmHighlight.length;
