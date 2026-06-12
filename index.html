@@ -1570,7 +1570,7 @@ document.querySelectorAll('.tab').forEach(t => {
 // ════════════════════════════════════════════════
 //  I18N v3 — FR / HE (addEventListener)
 // ════════════════════════════════════════════════
-const I18N = {
+var I18N = {
   fr: {
     'tab.search':'Recherche','tab.analyse':'Analyse marché','tab.projets':'Projets','tab.agents':'Agents','tab.nouv':'Nouveautés',
     'lbl.ville':'Ville','lbl.search':'Recherche libre','lbl.type':'Type','lbl.quartier':'Quartier','lbl.pieces':'Pièces',
@@ -1612,7 +1612,7 @@ const I18N = {
     'count.biens':'נכסים','dir':'rtl'
   }
 };
-let i18nLang = 'fr';
+var i18nLang = 'fr';
 function tr(k){ return (I18N[i18nLang]||{})[k] || (I18N.fr||{})[k] || k; }
 
 function applyLang(lang) {
