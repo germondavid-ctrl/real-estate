@@ -1969,6 +1969,7 @@ function openCrmModal(id){
   document.getElementById('crm-modal-status').value=st.status||'';
   document.getElementById('crm-modal-note').value=st.note||'';
   _renderModalChips(id,st.clients||[]);
+  _renderModalMatching(id);
   document.getElementById('crm-modal').classList.add('open');
 }
 function closeCrmModal(){document.getElementById('crm-modal').classList.remove('open');_crmId=null}
@@ -2047,6 +2048,7 @@ function renderCrmClients(){
         '<div class="crm-card-actions">'+
           '<button class="crm-cbtn" onclick="editClient(\''+c.id+'\')">Modifier</button>'+
           '<button class="crm-cbtn" onclick="filterByClient(\''+c.id+'\')">Biens liés ('+biens.length+')</button>'+
+          '<button class="crm-cbtn primary" data-cid="'+c.id+'" onclick="filterByClientCriteria(this.dataset.cid)">🔍 Matching ('+matchingBiens(c).length+')</button>'+
           '<button class="crm-cbtn danger" onclick="deleteClient(\''+c.id+'\')">Supprimer</button>'+
         '</div>'+
       '</div></div>';
@@ -2166,6 +2168,105 @@ function clearCrmFilter(){
   render();
 }
 
+
+/* === CRM MATCHING === */
+function matchingClients(r) {
+  return _crmClients().filter(function(c) {
+    if (c.budget_max && r.prix_nis && r.prix_nis > c.budget_max) return false;
+    if (c.budget_min && r.prix_nis && r.prix_nis < c.budget_min) return false;
+    if (c.pieces_min != null && r.pieces != null && r.pieces < c.pieces_min) return false;
+    if (c.pieces_max != null && r.pieces != null && r.pieces > c.pieces_max) return false;
+    if (c.quartiers && c.quartiers.length && r.quartier) {
+      var q = r.quartier.toLowerCase();
+      var ok = c.quartiers.some(function(cq) {
+        var cql = cq.toLowerCase();
+        return q.indexOf(cql) !== -1 || cql.indexOf(q) !== -1;
+      });
+      if (!ok) return false;
+    }
+    return true;
+  });
+}
+
+function matchingBiens(c) {
+  return records.filter(function(r) {
+    if (c.budget_max && r.prix_nis && r.prix_nis > c.budget_max) return false;
+    if (c.budget_min && r.prix_nis && r.prix_nis < c.budget_min) return false;
+    if (c.pieces_min != null && r.pieces != null && r.pieces < c.pieces_min) return false;
+    if (c.pieces_max != null && r.pieces != null && r.pieces > c.pieces_max) return false;
+    if (c.quartiers && c.quartiers.length && r.quartier) {
+      var q = r.quartier.toLowerCase();
+      var ok = c.quartiers.some(function(cq) {
+        var cql = cq.toLowerCase();
+        return q.indexOf(cql) !== -1 || cql.indexOf(q) !== -1;
+      });
+      if (!ok) return false;
+    }
+    return true;
+  });
+}
+
+function _renderModalMatching(id) {
+  var rec = records.find(function(r) { return r.id === id; });
+  var el = document.getElementById('crm-modal-matching');
+  var ct = document.getElementById('crm-match-count');
+  if (!rec || !el) return;
+  var matches = matchingClients(rec);
+  var linked = (_crmStatuses()[id] && _crmStatuses()[id].clients) || [];
+  if (ct) ct.textContent = '(' + matches.length + ')';
+  if (!matches.length) {
+    el.innerHTML = '<span style="color:#cbd5e1;font-size:12px">Aucun client correspondant</span>';
+    return;
+  }
+  el.innerHTML = matches.map(function(c) {
+    var isLinked = linked.indexOf(c.id) !== -1;
+    var budget = [
+      c.budget_min ? fmtBudget(c.budget_min) + 'M' : null,
+      c.budget_max ? fmtBudget(c.budget_max) + 'M' : null
+    ].filter(Boolean).join('–');
+    var btn = isLinked
+      ? '<span style="font-size:10px;color:#16a34a;font-weight:700">&#10003; Li&#233;</span>'
+      : '<button class="crm-cbtn primary" style="font-size:10px;padding:2px 8px" data-bid="' + id + '" data-cid="' + c.id + '" onclick="quickLinkClient(+this.dataset.bid, this.dataset.cid)">+ Lier</button>';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:#f8fafc;border-radius:6px;margin-bottom:4px">'
+      + '<div><strong>' + escapeHTML(c.prenom + ' ' + c.nom) + '</strong>'
+      + (budget ? ' <span style="color:#94a3b8;font-size:10px">&#183; ' + budget + ' &#8362;</span>' : '')
+      + (c.pieces_min ? ' <span style="color:#94a3b8;font-size:10px">&#183; ' + c.pieces_min + 'p+</span>' : '')
+      + '</div>' + btn + '</div>';
+  }).join('');
+}
+
+function quickLinkClient(bid, cid) {
+  var statuses = _crmStatuses();
+  var status = document.getElementById('crm-modal-status').value || 'propose';
+  var st = statuses[bid] || { status: status, note: '', clients: [], updated: '' };
+  if (!st.clients) st.clients = [];
+  if (st.clients.indexOf(cid) === -1) st.clients.push(cid);
+  if (!st.status) st.status = status;
+  statuses[bid] = st;
+  _saveCrmStatuses(statuses);
+  _renderModalChips(bid, st.clients);
+  _renderModalMatching(bid);
+}
+
+function filterByClientCriteria(cid) {
+  var c = _crmClients().find(function(x) { return x.id === cid; });
+  if (!c) return;
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.toggle('active', t.dataset.panel === 'search'); });
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.toggle('active', p.id === 'search'); });
+  window._crmHighlight = matchingBiens(c).map(function(r) { return r.id; });
+  render();
+  var banner = document.getElementById('crm-banner');
+  if (banner) {
+    var n = window._crmHighlight.length;
+    banner.innerHTML = '&#128269; Matching auto &mdash; <strong>' + escapeHTML(c.prenom + ' ' + c.nom) + '</strong> : '
+      + n + ' bien' + (n > 1 ? 's' : '') + ' correspondent'
+      + ' &nbsp;<span style="cursor:pointer;font-weight:700;font-size:15px" onclick="clearCrmFilter()">&#215;</span>';
+    banner.className = 'show';
+    var tbl = document.getElementById('tbl');
+    if (tbl && tbl.parentNode) tbl.parentNode.insertBefore(banner, tbl);
+  }
+}
+
 </script>
 
 
@@ -2227,6 +2328,10 @@ function clearCrmFilter(){
         <button class="crm-cbtn primary" onclick="linkModalClient()">+ Lier</button>
       </div>
       <div class="crm-client-chips" id="crm-modal-chips"></div>
+    </div>
+    <div class="crm-mrow">
+      <label>Clients correspondants <span id="crm-match-count" style="font-weight:400;font-size:10px;color:#94a3b8"></span></label>
+      <div id="crm-modal-matching" style="margin-top:4px"></div>
     </div>
     <div class="crm-mrow">
       <label>Note</label>
