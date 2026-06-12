@@ -330,6 +330,16 @@ tr.crm-highlight{background:#eff6ff !important}
 .crm-preview-more:hover{background:#eff6ff}
 .crm-preview-empty{font-size:12px;color:#94a3b8;text-align:center;padding:12px 0}
 
+
+/* === PROXIMITY SEARCH === */
+.crm-prox-row{grid-column:1/-1;display:flex;gap:8px;align-items:flex-end}
+.crm-prox-row .crm-ff{flex:1}
+.crm-prox-row select{padding:6px 9px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit;height:34px}
+#cf-geo-status{font-size:10px;margin-top:3px;min-height:14px}
+#cf-geo-status.ok{color:#16a34a}
+#cf-geo-status.err{color:#dc2626}
+#cf-geo-status.loading{color:#64748b}
+
 </style>
 </head>
 <body>
@@ -2059,7 +2069,9 @@ function renderCrmClients(){
         '<div class="crm-card-meta">'+
           (c.tel?'\U0001f4de '+escapeHTML(c.tel)+' · ':'')+budget+
           (c.pieces_min?' · '+c.pieces_min+'p min':'')+
-          (c.quartiers&&c.quartiers.length?' · '+escapeHTML(c.quartiers.join(', ')):'')+'</div>'+
+          (c.quartiers&&c.quartiers.length?' · '+escapeHTML(c.quartiers.join(', ')):'')
+          +(c.geo_addr&&c.geo_radius?' &nbsp;\uD83D\uDCCD '+escapeHTML(c.geo_addr)+' \u00b1'+c.geo_radius+'m':'')
+          +'</div>'+
         (c.notes?'<div class="crm-card-notes">'+escapeHTML(c.notes)+'</div>':'')+
         '<div class="crm-card-actions">'+
           '<button class="crm-cbtn" onclick="editClient(\''+c.id+'\')">Modifier</button>'+
@@ -2119,6 +2131,14 @@ function showAddClientForm(id){
   document.getElementById('cf-pmax').value=c.pieces_max||'';
   document.getElementById('cf-quartiers').value=(c.quartiers||[]).join(', ');
   document.getElementById('cf-notes').value=c.notes||'';
+  document.getElementById('cf-geo-addr').value=c.geo_addr||'';
+  document.getElementById('cf-geo-radius').value=c.geo_radius||500;
+  var _geoSt=document.getElementById('cf-geo-status');
+  if(_geoSt) _geoSt.textContent='';
+  if(c.geo_addr&&c.geo_lat){
+    _geoCache[c.geo_addr]={lat:c.geo_lat,lng:c.geo_lng,display:c.geo_addr};
+    if(_geoSt){_geoSt.textContent='\uD83D\uDCCD '+c.geo_addr;_geoSt.className='ok';}
+  }
   form.scrollIntoView({behavior:'smooth'});
   liveMatchPreview();
 }
@@ -2146,6 +2166,10 @@ function saveClient(){
     pieces_max:parseFloat(document.getElementById('cf-pmax').value)||null,
     quartiers:quartiers,
     notes:document.getElementById('cf-notes').value.trim(),
+    geo_addr:document.getElementById('cf-geo-addr').value.trim(),
+    geo_radius:parseInt(document.getElementById('cf-geo-radius').value)||null,
+    geo_lat:(function(){var a=document.getElementById('cf-geo-addr').value.trim();return a&&_geoCache[a]?_geoCache[a].lat:null})(),
+    geo_lng:(function(){var a=document.getElementById('cf-geo-addr').value.trim();return a&&_geoCache[a]?_geoCache[a].lng:null})(),
     created:prevC?prevC.created:new Date().toLocaleDateString('fr-FR')
   };
   if(_editClientId){
@@ -2284,7 +2308,7 @@ function filterByClientCriteria(cid) {
   document.querySelectorAll('.tab').forEach(function(t) { t.classList.toggle('active', t.dataset.panel === 'search'); });
   document.querySelectorAll('.panel').forEach(function(p) { p.classList.toggle('active', p.id === 'search'); });
   // Filtrer filtered directement (pas juste highlight)
-  var matches = matchingBiens(c);
+  var matches = matchingBiensWithProx(c);
   filtered = matches;
   window._crmHighlight = null; // pas besoin du highlight si on filtre
   render();
@@ -2330,14 +2354,16 @@ function liveMatchPreview() {
   var moreEl = document.getElementById('crm-preview-more');
   if (!preview || !listEl) return;
 
-  var hasCriteria = c.budget_min || c.budget_max || c.pieces_min || c.pieces_max || c.quartiers.length;
+  var _fpf = _getFormProxFilter();
+  if (_fpf) { c.geo_lat=_fpf.lat; c.geo_lng=_fpf.lng; c.geo_radius=_fpf.radius; }
+  var hasCriteria = c.budget_min || c.budget_max || c.pieces_min || c.pieces_max || c.quartiers.length || _fpf;
   if (!hasCriteria) {
     preview.classList.remove('has-criteria');
     return;
   }
   preview.classList.add('has-criteria');
 
-  var matches = matchingBiens(c);
+  var matches = matchingBiensWithProx(c);
   var n = matches.length;
   if (countEl) countEl.textContent = n + ' bien' + (n > 1 ? 's' : '');
 
@@ -2377,6 +2403,8 @@ function liveMatchPreview() {
 
 function showAllLiveMatches() {
   var c = _readFormCriteria();
+  var _fpf = _getFormProxFilter();
+  if (_fpf) { c.geo_lat=_fpf.lat; c.geo_lng=_fpf.lng; c.geo_radius=_fpf.radius; }
   document.querySelectorAll('.tab').forEach(function(t) { t.classList.toggle('active', t.dataset.panel === 'search'); });
   document.querySelectorAll('.panel').forEach(function(p) { p.classList.toggle('active', p.id === 'search'); });
   filtered = matchingBiens(c);
@@ -2391,6 +2419,169 @@ function showAllLiveMatches() {
     var tbl = document.getElementById('tbl');
     if (tbl && tbl.parentNode) tbl.parentNode.insertBefore(banner, tbl);
   }
+}
+
+
+/* === QUARTIER CENTROIDS (WGS84) === */
+var Q_COORDS = {
+  'Centre TLV':           [32.0839, 34.7786],
+  'Ben Gurion / Dizengoff':[32.0848, 34.7740],
+  'Lev HaIr':             [32.0790, 34.7760],
+  'Lev TLV':              [32.0790, 34.7760],
+  'Rothschild':           [32.0651, 34.7742],
+  'Midtown':              [32.0820, 34.7810],
+  'Trumpeldor':           [32.0830, 34.7755],
+  'Sarona':               [32.0750, 34.7880],
+  'Montefiore':           [32.0660, 34.7720],
+  'Melchett':             [32.0630, 34.7700],
+  'Levontin':             [32.0620, 34.7740],
+  'Neve Tsedek':          [32.0584, 34.7631],
+  'Neve Tzedek':          [32.0584, 34.7631],
+  'Kerem HaTeimanim':     [32.0600, 34.7620],
+  'Noga':                 [32.0590, 34.7650],
+  'Florentin':            [32.0584, 34.7711],
+  'Shapira':              [32.0623, 34.7769],
+  'Tsafon Yashan':        [32.0990, 34.7760],
+  'Tzafon Yashan':        [32.0990, 34.7760],
+  'Tsafon Hadash':        [32.1100, 34.7850],
+  'Tzafon Hadash':        [32.1100, 34.7850],
+  'Bavli':                [32.1040, 34.7850],
+  'Tzameret':             [32.1020, 34.7900],
+  'Kokhav HaTzafon':      [32.1060, 34.7820],
+  'Kikkar HaMedina':      [32.0980, 34.7810],
+  'Kikar HaMedina':       [32.0980, 34.7810],
+  'Yehuda Maccabi':       [32.1000, 34.7840],
+  'Ramat Aviv':           [32.1200, 34.8000],
+  'Ramat Aviv Gimel':     [32.1280, 34.8060],
+  'Neve Avivim':          [32.1350, 34.8100],
+  'Jaffa':                [32.0553, 34.7518],
+  'Yafo':                 [32.0553, 34.7518],
+  'Nord Jaffa':           [32.0620, 34.7550],
+  'Tsafon Yafo':          [32.0620, 34.7550],
+  'Neve Sha\u0027anan':  [32.0480, 34.7730],
+  'Neve Shaanan':         [32.0480, 34.7730],
+  'Kiryat Shalom':        [32.0350, 34.7680],
+  'Est TLV':              [32.0750, 34.8000],
+  'Yad Eliyahu':          [32.0640, 34.8020],
+  'Kiryat Meir':          [32.0750, 34.7950],
+  'HaTikva':              [32.0550, 34.7950],
+  'Hatikva':              [32.0550, 34.7950],
+  'Nahalat Yitzhak':      [32.0720, 34.7990],
+  'Ibn Gvirol':           [32.0870, 34.7850],
+  'Dizengoff':            [32.0800, 34.7750],
+  'Nord Ibn Gvirol':      [32.0950, 34.7830],
+  'HaYarkon':             [32.0850, 34.7680],
+  'Nahalat Binyamin':     [32.0670, 34.7700],
+  'Har Homa':             [31.7160, 35.2300],
+  'Kiryat Yovel':         [31.7600, 35.1800],
+  'Guilo':                [31.7140, 35.1760],
+  'Katamon':              [31.7640, 35.2050],
+  'Rehavia':              [31.7760, 35.2120],
+  'Arnona':               [31.7440, 35.2200],
+  'Romema':               [31.7990, 35.1970],
+  'Nahalot':              [31.7800, 35.2100],
+  'Centre-ville Jeru':    [31.7790, 35.2240],
+  "Ra'anana Centre":      [32.1840, 34.8710],
+  'Ramat Gan Centre':     [32.0690, 34.8240]
+};
+
+function getRecordCoords(r) {
+  if (r.lat && r.lng) return [r.lat, r.lng];
+  if (r.quartier && Q_COORDS[r.quartier]) return Q_COORDS[r.quartier];
+  var cityFallback = {
+    'Tel Aviv': [32.0853, 34.7818],
+    'Jerusalem': [31.7683, 35.2137],
+    "Ra'anana": [32.1840, 34.8710],
+    'Ramat Gan': [32.0690, 34.8240]
+  };
+  return cityFallback[r.ville] || null;
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+  var R = 6371000;
+  var dLat = (lat2-lat1)*Math.PI/180;
+  var dLon = (lon2-lon1)*Math.PI/180;
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+    Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+
+/* === PROXIMITY GEOCODING (browser Nominatim) === */
+var _geoCache = {};
+var _geoDebTimer = null;
+
+function debouncedGeo() {
+  clearTimeout(_geoDebTimer);
+  _geoDebTimer = setTimeout(geocodeFormAddr, 700);
+}
+
+async function geocodeFormAddr() {
+  var addrEl = document.getElementById('cf-geo-addr');
+  var statusEl = document.getElementById('cf-geo-status');
+  var addr = addrEl ? addrEl.value.trim() : '';
+  if (!addr) {
+    if (statusEl) { statusEl.textContent = ''; statusEl.className = ''; }
+    liveMatchPreview(); return;
+  }
+  if (_geoCache[addr] !== undefined) {
+    _showGeoStatus(statusEl, _geoCache[addr]);
+    liveMatchPreview(); return;
+  }
+  if (statusEl) { statusEl.textContent = 'Géolocalisation...'; statusEl.className = 'loading'; }
+  try {
+    var query = addr.toLowerCase().indexOf('israel') === -1 ? addr + ', Israel' : addr;
+    var url = 'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(query) + '&format=json&limit=1';
+    var resp = await fetch(url, { headers: { 'Accept': 'application/json', 'User-Agent': 'DavidGermonRealEstate/1.0' } });
+    var data = await resp.json();
+    if (data && data.length > 0) {
+      var coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon),
+        display: data[0].display_name.split(',').slice(0,2).join(',').trim() };
+      _geoCache[addr] = coords;
+      _showGeoStatus(statusEl, coords);
+    } else {
+      _geoCache[addr] = null;
+      if (statusEl) { statusEl.textContent = '\u26A0 Adresse introuvable'; statusEl.className = 'err'; }
+    }
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = 'Erreur r\u00e9seau — v\u00e9rifiez la connexion'; statusEl.className = 'err'; }
+  }
+  liveMatchPreview();
+}
+
+function _showGeoStatus(el, coords) {
+  if (!el) return;
+  if (coords) { el.textContent = '\uD83D\uDCCD ' + coords.display; el.className = 'ok'; }
+  else { el.textContent = '\u26A0 Adresse introuvable'; el.className = 'err'; }
+}
+
+function _getProxFilter(c) {
+  if (!c || !c.geo_lat || !c.geo_lng || !c.geo_radius) return null;
+  return { lat: c.geo_lat, lng: c.geo_lng, radius: c.geo_radius };
+}
+
+function _getFormProxFilter() {
+  var addr = (document.getElementById('cf-geo-addr') || {}).value || '';
+  var radius = parseInt((document.getElementById('cf-geo-radius') || {}).value) || 0;
+  if (!addr.trim() || !radius) return null;
+  var coords = _geoCache[addr.trim()];
+  if (!coords) return null;
+  return { lat: coords.lat, lng: coords.lng, radius: radius };
+}
+
+function proxMatch(r, pf) {
+  if (!pf) return true;
+  var rc = getRecordCoords(r);
+  if (!rc) return true; // pas de coords = on inclut par defaut
+  return haversine(pf.lat, pf.lng, rc[0], rc[1]) <= pf.radius;
+}
+
+function matchingBiensWithProx(c) {
+  var base = matchingBiens(c);
+  var pf = _getProxFilter(c);
+  if (!pf) return base;
+  return base.filter(function(r) { return proxMatch(r, pf); });
 }
 
 </script>
@@ -2418,6 +2609,23 @@ function showAllLiveMatches() {
         <div class="crm-ff"><label>Pièces min</label><input id="cf-pmin" type="number" oninput="liveMatchPreview()" step="0.5" placeholder="ex: 3"></div>
         <div class="crm-ff"><label>Pièces max</label><input id="cf-pmax" type="number" oninput="liveMatchPreview()" step="0.5" placeholder="ex: 5"></div>
         <div class="crm-ff full"><label>Quartiers recherchés</label><input id="cf-quartiers" type="text" oninput="liveMatchPreview()" placeholder="ex: Neve Tsedek, Florentin (séparés par virgule)"></div>
+        <div class="crm-prox-row crm-ff full">
+          <div class="crm-ff" style="flex:2">
+            <label>📍 Recherche par proximité (adresse / rue de référence)</label>
+            <input id="cf-geo-addr" type="text" placeholder="ex: Boulevard Ben Gourion, Tel Aviv" oninput="debouncedGeo()" autocomplete="off">
+            <div id="cf-geo-status"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px">Rayon</label>
+            <select id="cf-geo-radius" onchange="liveMatchPreview()">
+              <option value="">Désactivé</option>
+              <option value="200">200 m</option>
+              <option value="500" selected>500 m</option>
+              <option value="1000">1 km</option>
+              <option value="2000">2 km</option>
+            </select>
+          </div>
+        </div>
         <div class="crm-ff full"><label>Notes</label><textarea id="cf-notes" placeholder="Critères importants, remarques..."></textarea></div>
         <div class="crm-factions">
           <button class="crm-fsave" onclick="saveClient()">💾 Enregistrer</button>
