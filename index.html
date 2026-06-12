@@ -354,13 +354,25 @@ tr.crm-highlight{background:#eff6ff !important}
 .lang-btn { transition: all .2s; }
 
 </style>
+<script>
+// Wrapper langue — disponible immédiatement, appelle applyLang quand dispo
+function _switchLang(l) {
+  if (typeof applyLang === 'function') {
+    try { applyLang(l); } catch(e) { alert('Erreur langue: ' + e.message); }
+  } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof applyLang === 'function') try { applyLang(l); } catch(e) {}
+    });
+  }
+}
+</script>
 </head>
 <body>
 <div class="header" style="position:relative">
   <h1>David Germon Real Estate — Moteur Tel Aviv + Jérusalem</h1>
     <div class="lang-toggle">
-    <button class="lang-btn active" id="btn-fr">FR</button>
-    <button class="lang-btn" id="btn-he">עב</button>
+    <button class="lang-btn active" id="btn-fr" onclick="_switchLang('fr')">FR</button>
+    <button class="lang-btn" id="btn-he" onclick="_switchLang('he')">עב</button>
   </div>
   <div class="sub">1 449 biens (TLV : 852 · Jérusalem : 460 · Ra'anana : 66 · Ramat Gan : 20 · Givatayim : 2 · Rishon LeZion : 7 · Kfar Saba : 3 · Bat Yam : 20 · Holon : 19) — MAJ 09/06/2026</div>
 </div>
@@ -1610,6 +1622,9 @@ function applyLang(lang) {
   var bf=document.getElementById('btn-fr'), bh=document.getElementById('btn-he');
   if(bf) bf.className='lang-btn'+(lang==='fr'?' active':'');
   if(bh) bh.className='lang-btn'+(lang==='he'?' active':'');
+  // Changer la couleur du header pour confirmer le changement
+  var hdr=document.querySelector('.header');
+  if(hdr) hdr.style.background=lang==='he'?'linear-gradient(135deg,#1a5276 0%,#1abc9c 100%)':'';
   // RTL uniquement sur les éléments UI, pas sur les données du tableau
   document.getElementById('navbar') && document.getElementById('navbar').setAttribute('dir', L.dir||'ltr');
   document.querySelectorAll('.f-group label, .tab, .btn, .section h2, .lang-btn').forEach(function(el){
