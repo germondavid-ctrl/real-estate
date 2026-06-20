@@ -446,6 +446,7 @@ function _switchLang(l) {
     <th data-k="quartier" data-i18n="th.quartier">Quartier</th>
     <th data-k="pieces" class="center" data-i18n="th.pieces">P.</th>
     <th data-k="surf_batie_m2" class="right" data-i18n="th.surf">Surf.</th>
+    <th data-k="etage" class="center" data-i18n="th.etage">Ét.</th>
     <th data-k="prix_nis" class="right" data-i18n="th.prix">Prix</th>
     <th data-k="prix_m2_nis" class="right" data-i18n="th.prixm2">Prix/m²</th>
     <th data-k="agent" data-i18n="th.agent">Agent / Contact</th>
@@ -854,7 +855,7 @@ if (typeof crmBadge === 'undefined') { var crmBadge = function(id) { return ''; 
 
 function render() {
   const tb = document.getElementById('tbody');
-  if (!filtered.length) { tb.innerHTML = '<tr><td colspan="11" class="empty">Aucun bien.</td></tr>'; return; }
+  if (!filtered.length) { tb.innerHTML = '<tr><td colspan="12" class="empty">Aucun bien.</td></tr>'; return; }
   tb.innerHTML = filtered.map(r => {
     const fl = alertFlag(r);
     const flH = fl === 'under' ? ' <span class="flag under">-</span>' : fl === 'over' ? ' <span class="flag over">+</span>' : '';
@@ -871,6 +872,7 @@ function render() {
       '<td><span class="q">' + escapeHTML(r.quartier||'-') + '</span></td>' +
       '<td class="center">' + escapeHTML(String(r.pieces ?? '-')) + '</td>' +
       '<td class="right">' + (r.surf_batie_m2 ? r.surf_batie_m2 + 'm²' : '-') + '</td>' +
+      '<td class="center">' + escapeHTML(r.etage != null && r.etage !== '' ? String(r.etage) : '-') + '</td>' +
       '<td class="right price">' + fmtPrice(r) + '</td>' +
       '<td class="right pm2 ' + pm2Class(r.prix_m2_nis) + '">' + (r.prix_m2_nis ? fmt(r.prix_m2_nis) : '-') + flH + '</td>' +
       '<td><div class="agent">' + escapeHTML(r.agent||'') + '</div><div class="tel">' + escapeHTML(r.telephone||'') + '</div><div style="margin-top:4px">' + buildContactBtns(r) + '</div></td>' +
@@ -1581,7 +1583,7 @@ var I18N = {
     'opt.jardin':'Avec jardin','opt.mamad':'Avec mamad','opt.vmer':'Vue mer',
     'btn.reset':'Réinitialiser','btn.csv':'Exporter CSV',
     'th.ville':'Ville','th.type':'Type','th.adresse':'Adresse','th.quartier':'Quartier',
-    'th.pieces':'P.','th.surf':'Surf.','th.prix':'Prix','th.prixm2':'Prix/m²','th.agent':'Agent / Contact',
+    'th.pieces':'P.','th.surf':'Surf.','th.etage':'Ét.','th.prix':'Prix','th.prixm2':'Prix/m²','th.agent':'Agent / Contact',
     'h2.analyse':'Analyse de marché','h2.projets':'Projets neufs & développement',
     'h2.agents':'Recherche par agent','h2.nouv':'Nouveautés — dernières publications',
     'ph.q':'Adresse, agent, mots-clés...','ph.agent':'Ex: Cohen, 052…',
@@ -1601,7 +1603,7 @@ var I18N = {
     'opt.jardin':'עם גינה','opt.mamad':'עם ממ"ד','opt.vmer':'נוף לים',
     'btn.reset':'איפוס','btn.csv':'ייצוא CSV',
     'th.ville':'עיר','th.type':'סוג','th.adresse':'כתובת','th.quartier':'שכונה',
-    'th.pieces':"חד'",'th.surf':'שטח','th.prix':'מחיר','th.prixm2':'מחיר/מ"ר','th.agent':'סוכן / קשר',
+    'th.pieces':"חד'",'th.surf':'שטח','th.etage':'קומה','th.prix':'מחיר','th.prixm2':'מחיר/מ"ר','th.agent':'סוכן / קשר',
     'h2.analyse':'ניתוח שוק','h2.projets':'פרויקטים חדשים ופיתוח',
     'h2.agents':'חיפוש לפי סוכן','h2.nouv':'חדשות — פרסומים אחרונים',
     'ph.q':'כתובת, סוכן, מילות מפתח...','ph.agent':'למשל: כהן, 052…',
