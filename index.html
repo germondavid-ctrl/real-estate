@@ -201,6 +201,7 @@ h2 { font-size:15px; color:var(--primary); margin:18px 0 10px; }
 .nouv-pm2{font-size:11px;color:var(--muted)}
 .nouv-agent{font-size:11px;color:var(--muted);margin-top:2px}
 .nouv-flags{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.nouv-groupe{font-size:11px;color:#5a9a5a;margin-top:2px}
 .nouv-empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
 
 
@@ -1113,6 +1114,7 @@ function renderNouveautes() {
           <div class="nouv-sub">${esc(r.quartier||'')}${r.quartier&&dim?' · ':''} ${esc(dim)}</div>
           ${flagsHtml ? '<div class="nouv-flags">'+flagsHtml+'</div>' : ''}
           ${r.agent ? '<div class="nouv-agent">'+esc(r.agent)+(r.telephone?' — '+esc(r.telephone):'')+'</div>' : ''}
+          ${r.groupe_wa ? '<div class="nouv-groupe">📱 '+esc(r.groupe_wa)+'</div>' : ''}
         </div>
         <div>
           <div class="nouv-price">${prixStr}</div>
