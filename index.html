@@ -1114,7 +1114,7 @@ function renderNouveautes() {
           <div class="nouv-sub">${esc(r.quartier||'')}${r.quartier&&dim?' · ':''} ${esc(dim)}</div>
           ${flagsHtml ? '<div class="nouv-flags">'+flagsHtml+'</div>' : ''}
           ${r.agent ? '<div class="nouv-agent">'+esc(r.agent)+(r.telephone?' — '+esc(r.telephone):'')+'</div>' : ''}
-          ${r.groupe_wa ? '<div class="nouv-groupe">📱 '+esc(r.groupe_wa)+'</div>' : ''}
+          ${r.groupe_wa ? '<div class="nouv-groupe">📱 '+esc(r.groupe_wa)+(r.date_source?' · '+r.date_source.split('-').reverse().join('/'):'')+'</div>' : ''}
         </div>
         <div>
           <div class="nouv-price">${prixStr}</div>
@@ -1181,7 +1181,7 @@ function renderAgents() {
         : '';
       return `<tr>
         <td><span class="${vC(r.ville)}">${vL(r.ville)}</span></td>
-        <td class="adresse"${r.groupe_wa?` title="📱 ${r.groupe_wa}"`:''}><div class="main">${esc((r.adresse||'').split('\n')[0])}</div>
+        <td class="adresse"${r.groupe_wa?` title="📱 ${r.groupe_wa}${r.date_source? ' · '+r.date_source.split('-').reverse().join('/'):''}"`:''}><div class="main">${esc((r.adresse||'').split('\n')[0])}</div>
           <div class="desc">${esc(r.quartier||'')}${r.quartier&&(r.pieces||r.surf_batie_m2)?' · ':''}`
         + (r.pieces?r.pieces+'p':'') + (r.pieces&&r.surf_batie_m2?' / ':'') + (r.surf_batie_m2?r.surf_batie_m2+'m²':'')
         + `</div></td>
