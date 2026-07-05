@@ -355,6 +355,27 @@ tr.crm-highlight{background:#eff6ff !important}
 .lang-btn.active { background:rgba(255,255,255,.35) !important; border-color:white !important; font-weight:900; }
 .lang-btn { transition: all .2s; }
 
+
+/* ── Fiche détail ── */
+#detail-modal { align-items:center; justify-content:center; }
+.dm-header { margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.dm-flags { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
+.dm-adresse { font-size:17px; font-weight:700; color:#1a202c; line-height:1.35; margin-bottom:4px; direction:rtl; text-align:left; }
+.dm-q-label { font-size:12px; color:var(--muted); margin-top:2px; }
+.dm-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; background:#f8fafc; padding:14px; border-radius:8px; margin-bottom:14px; }
+.dm-field { display:flex; flex-direction:column; gap:3px; }
+.dm-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+.dm-val { font-size:14px; font-weight:600; color:#1a202c; }
+.dm-prix .dm-val { font-size:16px; color:var(--primary); }
+.dm-section { margin-bottom:14px; display:flex; flex-direction:column; gap:8px; }
+.dm-contact { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+.dm-wa { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px 14px; margin-bottom:14px; }
+.dm-wa .dm-label { color:#166534; }
+.dm-wa-name { font-size:14px; font-weight:600; color:#166534; margin-top:3px; }
+.dm-wa-date { font-size:12px; color:#166534; margin-top:4px; }
+.dm-dates { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:14px; }
+.dm-note { margin-top:4px; }
+.dm-note-text { font-size:12.5px; color:#374151; line-height:1.6; background:#f8fafc; padding:10px 12px; border-radius:6px; border-left:3px solid var(--accent); margin-top:6px; }
 </style>
 <script>
 // Wrapper langue — disponible immédiatement, appelle applyLang quand dispo
@@ -744,6 +765,62 @@ function getF() {
     equip: [...selectedEquips],
   };
 }
+
+// ── FICHE DÉTAIL ────────────────────────────────────────────────────────
+function openDetail(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const fmtDs = s => {
+    if (!s) return '';
+    if (s.length === 10 && s[4] === '-') { const p=s.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+    return s;
+  };
+  const villeCls = r.ville==='Tel Aviv'?'ville-tlv':r.ville==='Jerusalem'?'ville-jeru':r.ville==='Bat Yam'?'ville-by':r.ville==='Holon'?'ville-hol':r.ville==='Ramat Gan'?'ville-rg':r.ville==='Givatayim'?'ville-giv':r.ville==='Rishon LeZion'?'ville-rl':r.ville==='Kfar Saba'?'ville-ks':'ville-ra';
+  const c = (r.telephone||'').replace(/[^\d+]/g,'');
+  const waNum = c ? c.replace(/^0/,'972') : '';
+  const pm2cls = r.prix_m2_nis ? (r.prix_m2_nis>35000?'pm2 high':r.prix_m2_nis<20000?'pm2 low':'pm2') : '';
+  const dsF = fmtDs(r.date_source);
+  const noteLines = (r.note||'').split('\n').map(l => '<div>'+esc(l)+'</div>').join('');
+  const baisseH = isBaisse(r) ? ' <span class="flag baisse">BAISSE</span>' : '';
+  const phH = r.is_penthouse ? ' <span class="flag new">PENTHOUSE</span>' : '';
+  const mamH = isMamad(r) ? ' <span class="flag mamad">MAMAD</span>' : '';
+  document.getElementById('detail-modal-body').innerHTML =
+    '<div class="dm-header">'
+    + '<div class="dm-flags"><span class="'+villeCls+'">'+esc(r.ville||'')+'</span>'
+    + (r.type ? ' <span class="'+(r.type==='Vente'?'t-vente':'t-location')+'" style="font-size:12px">'+esc(r.type)+'</span>' : '')
+    + baisseH + phH + mamH + '</div>'
+    + '<div class="dm-adresse">'+esc(r.adresse||'')+'</div>'
+    + (r.quartier ? '<div class="dm-q-label">'+esc(r.quartier)+'</div>' : '')
+    + '</div>'
+    + '<div class="dm-grid">'
+    + '<div class="dm-field"><div class="dm-label">Pièces</div><div class="dm-val">'+(r.pieces!=null?r.pieces:'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Surface bâtie</div><div class="dm-val">'+(r.surf_batie_m2?r.surf_batie_m2+'m²':'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Balcon/Jardin</div><div class="dm-val">'+(r.balcon_jardin_m2?r.balcon_jardin_m2+'m²':'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Surf. pondérée</div><div class="dm-val">'+(r.surf_ponderee_m2?r.surf_ponderee_m2+'m²':'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Étage</div><div class="dm-val">'+((r.etage!=null&&r.etage!=='')?String(r.etage):'—')+'</div></div>'
+    + '<div class="dm-field dm-prix"><div class="dm-label">Prix</div><div class="dm-val">'+fmtPrice(r)+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Prix/m²</div><div class="dm-val '+pm2cls+'">'+(r.prix_m2_nis?fmt(r.prix_m2_nis)+' ₪/m²':'—')+'</div></div>'
+    + '</div>'
+    + '<div class="dm-section">'
+    + '<div class="dm-field"><div class="dm-label">Agent</div><div class="dm-val" style="font-size:13px;font-weight:500">'+esc(r.agent||'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Téléphone</div><div class="dm-val" style="font-size:13px;font-weight:500">'+esc(r.telephone||'—')+'</div></div>'
+    + (c ? '<div class="dm-contact"><a class="contact-btn" href="tel:'+c+'" onclick="event.stopPropagation()">📞 Appeler</a><a class="contact-btn" href="https://wa.me/'+waNum+'" target="_blank" onclick="event.stopPropagation()">💬 WhatsApp</a></div>' : '')
+    + '</div>'
+    + (r.groupe_wa
+        ? '<div class="dm-wa"><div class="dm-label">📱 Groupe WhatsApp</div><div class="dm-wa-name">'+esc(r.groupe_wa)+'</div>'+(dsF?'<div class="dm-wa-date">Publié le '+esc(dsF)+'</div>':'')+'</div>'
+        : '')
+    + '<div class="dm-dates">'
+    + '<div class="dm-field"><div class="dm-label">Date d\'entrée</div><div class="dm-val" style="font-size:12px;font-weight:400">'+esc(r.date_entree||'—')+'</div></div>'
+    + (r.source ? '<div class="dm-field"><div class="dm-label">Source</div><div class="dm-val" style="font-size:12px;font-weight:400">'+esc(r.source)+'</div></div>' : '')
+    + '</div>'
+    + (r.note ? '<div class="dm-note"><div class="dm-label">Note</div><div class="dm-note-text">'+noteLines+'</div></div>' : '');
+  document.getElementById('detail-modal').style.display = 'flex';
+}
+function closeDetail() { document.getElementById('detail-modal').style.display = 'none'; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+// ─────────────────────────────────────────────────────────────────────────
+
 function applyFilters() {
   const f = getF();
   filtered = records.filter(r => {
@@ -868,7 +945,7 @@ function render() {
     const baisseH = isBaisse(r) ? ' <span class="flag baisse">BAISSE</span>' : '';
     const mamadH = (r.ville === 'Tel Aviv' && isMamad(r)) ? ' <span class="flag mamad">MAMAD</span>' : '';
     const villeCls = r.ville === 'Tel Aviv' ? 'ville-tlv' : r.ville === 'Jerusalem' ? 'ville-jeru' : r.ville === 'Bat Yam' ? 'ville-by' : r.ville === 'Holon' ? 'ville-hol' : r.ville === 'Ramat Gan' ? 'ville-rg' : r.ville === 'Givatayim' ? 'ville-giv' : r.ville === 'Rishon LeZion' ? 'ville-rl' : r.ville === 'Kfar Saba' ? 'ville-ks' : 'ville-ra';
-    return '<tr' + (window._crmHighlight && window._crmHighlight.includes(r.id) ? ' class="crm-highlight"' : '') + '>' +
+    return '<tr onclick="openDetail(' + r.id + ')" style="cursor:pointer"' + (window._crmHighlight && window._crmHighlight.includes(r.id) ? ' class="crm-highlight"' : '') + '>' +
       '<td>' + r.id + newH + baisseH + mamadH + '</td>' +
       '<td><span class="' + villeCls + '">' + (r.ville === 'Tel Aviv' ? 'TLV' : r.ville === 'Jerusalem' ? 'Jeru' : r.ville === 'Bat Yam' ? 'BY' : r.ville === 'Holon' ? 'HOL' : r.ville === 'Ramat Gan' ? 'RG' : r.ville === 'Givatayim' ? 'GIV' : r.ville === 'Rishon LeZion' ? 'RL' : r.ville === 'Kfar Saba' ? 'KS' : 'RA') + '</span></td>' +
       '<td class="' + (r.type === 'Vente' ? 't-vente' : 't-location') + '">' + escapeHTML(r.type||'') + '</td>' +
@@ -879,8 +956,8 @@ function render() {
       '<td class="center">' + escapeHTML(r.etage != null && r.etage !== '' ? String(r.etage) : '-') + '</td>' +
       '<td class="right price">' + fmtPrice(r) + '</td>' +
       '<td class="right pm2 ' + pm2Class(r.prix_m2_nis) + '">' + (r.prix_m2_nis ? fmt(r.prix_m2_nis) : '-') + flH + '</td>' +
-      '<td><div class="agent">' + escapeHTML(r.agent||'') + '</div><div class="tel">' + escapeHTML(r.telephone||'') + '</div><div style="margin-top:4px">' + buildContactBtns(r) + '</div></td>' +
-      '<td class="crm-cell">' + crmBadge(r.id) + '</td>' +
+      '<td onclick="event.stopPropagation()"><div class="agent">' + escapeHTML(r.agent||'') + '</div><div class="tel">' + escapeHTML(r.telephone||'') + '</div><div style="margin-top:4px">' + buildContactBtns(r) + '</div></td>' +
+      '<td class="crm-cell" onclick="event.stopPropagation()">' + crmBadge(r.id) + '</td>' +
       '</tr>';
   }).join('');
   document.querySelectorAll('thead th').forEach(th => {
@@ -1107,7 +1184,7 @@ function renderNouveautes() {
         r.has_baisse   ? '<span class="flag baisse">Baisse</span>' : '',
       ].filter(Boolean).join('');
 
-      return `<div class="nouv-card">
+      return `<div class="nouv-card" onclick="openDetail(${r.id})" style="cursor:pointer">
         <div class="nouv-ville"><span class="${vC(r.ville)}">${vL(r.ville)}</span></div>
         <div class="nouv-info">
           <div class="nouv-adresse">${esc((r.adresse||'').split('\n')[0])}</div>
@@ -2784,5 +2861,16 @@ function normalizeSearch(s) {
 
 <div id="crm-banner"></div>
 
+
+<!-- ── FICHE DÉTAIL ── -->
+<div id="detail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:2000;padding:20px" onclick="if(event.target===this)closeDetail()">
+  <div style="background:white;border-radius:14px;max-width:640px;width:100%;margin:5vh auto 0;max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.35)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:white;z-index:1;border-radius:14px 14px 0 0">
+      <span style="font-weight:700;font-size:14px;color:var(--primary)">📋 Fiche bien</span>
+      <button onclick="closeDetail()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:0 4px;line-height:1" title="Fermer (Échap)">✕</button>
+    </div>
+    <div id="detail-modal-body" style="padding:18px 20px 24px"></div>
+  </div>
+</div>
 </body>
 </html>
