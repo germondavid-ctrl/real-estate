@@ -748,13 +748,13 @@ function applyFilters() {
   const f = getF();
   filtered = records.filter(r => {
     if (f.ville && r.ville !== f.ville) return false;
-    if (f.type === 'Penthouse') { if (!r.is_penthouse && !r.type.includes('PH')) return false; }
+    if (f.type === 'Penthouse') { if (!r.is_penthouse && !(r.type||'').includes('PH')) return false; }
     else if (f.type === 'Jardin') { if (!r.has_garden) return false; }
     else if (f.type === 'Mamad') { if (!isMamad(r)) return false; }
     else if (f.type === 'Vue mer') { if (!hasSeaView(r)) return false; }
-    else if (f.type === 'Vente')    { if (r.type.startsWith('Location')) return false; }
-    else if (f.type === 'Location') { if (!r.type.startsWith('Location')) return false; }
-    else if (f.type && !r.type.startsWith(f.type)) return false;
+    else if (f.type === 'Vente')    { if ((r.type||'').startsWith('Location')) return false; }
+    else if (f.type === 'Location') { if (!(r.type||'').startsWith('Location')) return false; }
+    else if (f.type && !(r.type||'').startsWith(f.type)) return false;
     if (f.quartier.length && !f.quartier.includes(r.quartier)) return false;
     if (f.pieces.length && !f.pieces.includes(String(r.pieces))) return false;
     if (f.pmin && (r.prix_nis ?? 0) < f.pmin) return false;
@@ -1033,9 +1033,9 @@ function renderNouveautes() {
     if (ville && r.ville !== ville) return false;
     if (type) {
       if (type === 'Vue mer') { if (!hasSeaView(r)) return false; }
-      else if (type === 'Vente') { if (r.type.startsWith('Location')) return false; }
-      else if (type === 'Location') { if (!r.type.startsWith('Location')) return false; }
-      else if (!r.type.startsWith(type)) return false;
+      else if (type === 'Vente') { if ((r.type||'').startsWith('Location')) return false; }
+      else if (type === 'Location') { if (!(r.type||'').startsWith('Location')) return false; }
+      else if (!(r.type||'').startsWith(type)) return false;
     }
     if (cutoff !== null) {
       const d = parseNDate(r.date_entree || r.date_source);
