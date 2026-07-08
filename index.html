@@ -777,7 +777,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   t.classList.add('active');
   document.getElementById(t.dataset.panel).classList.add('active');
   if(t.dataset.panel==='crm')renderCRM();
-  if(t.dataset.panel==='recherches')renderMandats();
+  if(t.dataset.panel==='recherches')renderRecherches();
 }));
 
 function getF() {
