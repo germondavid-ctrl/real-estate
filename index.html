@@ -376,6 +376,36 @@ tr.crm-highlight{background:#eff6ff !important}
 .dm-dates { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:14px; }
 .dm-note { margin-top:4px; }
 .dm-note-text { font-size:12.5px; color:#374151; line-height:1.6; background:#f8fafc; padding:10px 12px; border-radius:6px; border-left:3px solid var(--accent); margin-top:6px; }
+
+/* ===== MANDATS PANEL ===== */
+.mandats-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+.mandats-hdr h2 { margin:0; font-size:16px; color:var(--primary); }
+.mandats-hdr .sub { font-size:12px; color:var(--muted); margin-top:2px; }
+.mandat-form-box { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px; }
+.mandat-form-box h3 { margin:0 0 12px; font-size:14px; color:var(--primary); }
+.mandat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-bottom:12px; }
+.mandat-grid label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--muted); font-weight:500; }
+.mandat-grid input, .mandat-grid select, .mandat-grid textarea { border:1px solid var(--border); border-radius:6px; padding:7px 10px; font-size:13px; font-family:inherit; resize:vertical; }
+.mandat-grid textarea { grid-column:1/-1; min-height:80px; }
+.btn-add-mandat { background:var(--primary); color:#fff; border:none; border-radius:6px; padding:9px 18px; cursor:pointer; font-size:13px; font-weight:600; }
+.btn-add-mandat:hover { opacity:.88; }
+.mandats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px; }
+.mandat-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px; position:relative; }
+.mandat-card .badge-days { position:absolute; top:10px; right:10px; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; }
+.mandat-card .badge-days.green { background:#dcfce7; color:#166534; }
+.mandat-card .badge-days.yellow { background:#fef9c3; color:#713f12; }
+.mandat-card .badge-days.orange { background:#ffedd5; color:#9a3412; }
+.mandat-card .badge-days.red { background:#fee2e2; color:#991b1b; }
+.mandat-card .mc-date { font-size:11px; color:var(--muted); margin-bottom:6px; }
+.mandat-card .mc-agent { font-size:14px; font-weight:600; color:var(--primary); }
+.mandat-card .mc-phone { font-size:12px; color:var(--muted); margin-bottom:4px; }
+.mandat-card .mc-groupe { display:inline-block; background:#e0f2fe; color:#075985; border-radius:12px; padding:2px 9px; font-size:11px; margin-bottom:8px; }
+.mandat-card .mc-ville { display:inline-block; background:#f3e8ff; color:#7e22ce; border-radius:12px; padding:2px 9px; font-size:11px; margin-bottom:8px; margin-left:4px; }
+.mandat-card .mc-desc { font-size:13px; color:#374151; line-height:1.5; border-top:1px solid var(--border); padding-top:8px; margin-top:4px; white-space:pre-wrap; direction:auto; }
+.mandat-card .mc-del { position:absolute; bottom:10px; right:10px; background:none; border:none; cursor:pointer; color:var(--muted); font-size:16px; opacity:.5; }
+.mandat-card .mc-del:hover { opacity:1; color:var(--red); }
+.mandats-empty { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
+.btn-open-mandat-form { background:var(--primary); color:#fff; border:none; border-radius:6px; padding:9px 16px; cursor:pointer; font-size:13px; font-weight:600; }
 </style>
 <script>
 // Wrapper langue — disponible immédiatement, appelle applyLang quand dispo
@@ -407,6 +437,7 @@ function _switchLang(l) {
   <div class="tab" data-panel="nouveautes" data-i18n="tab.nouv">Nouveautés</div>
   <div class="tab" data-panel="weblinks">🌐 Sites Web</div>
   <div class="tab" data-panel="crm">📋 CRM</div>
+  <div class="tab" data-panel="mandats">🔍 Mandats</div>
 </div>
 
 <div class="panel active" id="search">
@@ -746,6 +777,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   t.classList.add('active');
   document.getElementById(t.dataset.panel).classList.add('active');
   if(t.dataset.panel==='crm')renderCRM();
+  if(t.dataset.panel==='mandats')renderMandats();
 }));
 
 function getF() {
@@ -2734,6 +2766,98 @@ function normalizeSearch(s) {
   return s.replace(/[\u05B0-\u05C7]/g, '').toLowerCase();
 }
 
+
+// ===== MANDATS RECHERCHES =====
+const MANDATS_KEY = 'mandats_recherche_v1';
+const MANDATS_TTL_DAYS = 60;
+
+function loadMandats() {
+  let raw;
+  try { raw = JSON.parse(localStorage.getItem(MANDATS_KEY) || '[]'); } catch(e) { raw = []; }
+  const cutoff = Date.now() - MANDATS_TTL_DAYS * 86400000;
+  const active = raw.filter(m => new Date(m.date_entree).getTime() >= cutoff);
+  if (active.length !== raw.length) {
+    localStorage.setItem(MANDATS_KEY, JSON.stringify(active));
+  }
+  return active.sort((a, b) => new Date(b.date_entree) - new Date(a.date_entree));
+}
+
+function saveMandats(arr) {
+  localStorage.setItem(MANDATS_KEY, JSON.stringify(arr));
+}
+
+function toggleMandatForm() {
+  const box = document.getElementById('mandat-form-box');
+  const shown = box.style.display !== 'none';
+  box.style.display = shown ? 'none' : 'block';
+  if (!shown) {
+    document.getElementById('mf-date').value = new Date().toISOString().slice(0,10);
+    document.getElementById('mf-agent').value = '';
+    document.getElementById('mf-tel').value = '';
+    document.getElementById('mf-groupe').value = '';
+    document.getElementById('mf-ville').value = '';
+    document.getElementById('mf-desc').value = '';
+  }
+}
+
+function saveMandat() {
+  const agent = document.getElementById('mf-agent').value.trim();
+  const desc  = document.getElementById('mf-desc').value.trim();
+  if (!agent || !desc) { alert('Agent et description obligatoires'); return; }
+  const m = {
+    id:          Date.now(),
+    date_entree: document.getElementById('mf-date').value || new Date().toISOString().slice(0,10),
+    agent:       agent,
+    telephone:   document.getElementById('mf-tel').value.trim(),
+    groupe_wa:   document.getElementById('mf-groupe').value.trim(),
+    ville:       document.getElementById('mf-ville').value,
+    description: desc
+  };
+  const arr = loadMandats();
+  arr.unshift(m);
+  saveMandats(arr);
+  document.getElementById('mandat-form-box').style.display = 'none';
+  renderMandats();
+}
+
+function deleteMandat(id) {
+  if (!confirm('Supprimer cette recherche ?')) return;
+  saveMandats(loadMandats().filter(m => m.id !== id));
+  renderMandats();
+}
+
+function renderMandats() {
+  const mandats = loadMandats();
+  const list = document.getElementById('mandats-list');
+  const stats = document.getElementById('mandats-stats');
+  stats.textContent = mandats.length
+    ? mandats.length + ' recherche(s) active(s) · expiration auto dans ' + MANDATS_TTL_DAYS + ' jours'
+    : '';
+  if (!mandats.length) {
+    list.innerHTML = '<div class="mandats-empty">Aucune recherche active.<br>Ajoutez des "מחפש" depuis vos groupes WhatsApp.</div>';
+    return;
+  }
+  const today = Date.now();
+  list.innerHTML = mandats.map(m => {
+    const daysElapsed = Math.floor((today - new Date(m.date_entree).getTime()) / 86400000);
+    const daysLeft = MANDATS_TTL_DAYS - daysElapsed;
+    const badgeClass = daysLeft <= 7 ? 'red' : daysLeft <= 15 ? 'orange' : daysLeft <= 30 ? 'yellow' : 'green';
+    const dateStr = m.date_entree ? new Date(m.date_entree + 'T12:00:00').toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+    const groupeBadge = m.groupe_wa ? `<span class="mc-groupe">📱 ${m.groupe_wa}</span>` : '';
+    const villeBadge  = m.ville     ? `<span class="mc-ville">🏙️ ${m.ville}</span>` : '';
+    const telLink = m.telephone ? `<div class="mc-phone">📞 <a href="tel:${m.telephone}" style="color:inherit">${m.telephone}</a></div>` : '';
+    return `<div class="mandat-card">
+  <span class="badge-days ${badgeClass}">${daysLeft}j restants</span>
+  <div class="mc-date">🗓️ ${dateStr}</div>
+  <div class="mc-agent">${m.agent}</div>
+  ${telLink}
+  ${groupeBadge}${villeBadge}
+  <div class="mc-desc">${m.description.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+  <button class="mc-del" onclick="deleteMandat(${m.id})" title="Supprimer">🗑️</button>
+</div>`;
+  }).join('');
+}
+
 </script>
 
 
@@ -2821,6 +2945,55 @@ function normalizeSearch(s) {
     <div class="crm-pipeline" id="crm-pipeline-board"></div>
   </div>
 </div>
+<div class="panel" id="mandats">
+  <div class="mandats-hdr">
+    <div>
+      <h2>🔍 Recherches agents — מחפשים</h2>
+      <div class="sub">Agents qui cherchent pour leurs clients · Expiration auto après 60 jours</div>
+    </div>
+    <button class="btn-open-mandat-form" onclick="toggleMandatForm()">➕ Ajouter une recherche</button>
+  </div>
+
+  <div id="mandat-form-box" class="mandat-form-box" style="display:none">
+    <h3>Nouvelle recherche agent</h3>
+    <div class="mandat-grid">
+      <label>📅 Date (message WA)
+        <input type="date" id="mf-date" />
+      </label>
+      <label>👤 Agent
+        <input type="text" id="mf-agent" placeholder="Nom de l'agent" />
+      </label>
+      <label>📞 Téléphone
+        <input type="tel" id="mf-tel" placeholder="05X-XXXXXXX" />
+      </label>
+      <label>📱 Groupe WhatsApp
+        <input type="text" id="mf-groupe" placeholder="Nom du groupe" />
+      </label>
+      <label>🏙️ Ville
+        <select id="mf-ville">
+          <option value="">Toutes villes</option>
+          <option value="Tel Aviv">Tel Aviv</option>
+          <option value="Jerusalem">Jérusalem</option>
+          <option value="Ra'anana">Ra'anana</option>
+          <option value="Ramat Gan">Ramat Gan</option>
+          <option value="Kfar Saba">Kfar Saba</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </label>
+      <label style="grid-column:1/-1">📝 Description de la recherche (texte WA original ou résumé)
+        <textarea id="mf-desc" placeholder="מחפש 3 חדרים ב... / Cherche 3p dans... budget max ...₪"></textarea>
+      </label>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn-add-mandat" onclick="saveMandat()">✅ Enregistrer</button>
+      <button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px" onclick="toggleMandatForm()">Annuler</button>
+    </div>
+  </div>
+
+  <div id="mandats-stats" style="margin-bottom:12px;font-size:13px;color:var(--muted)"></div>
+  <div id="mandats-list" class="mandats-grid"></div>
+</div>
+
 
 <div id="crm-modal" onclick="if(event.target===this)closeCrmModal()">
   <div id="crm-modal-box">
