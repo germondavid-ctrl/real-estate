@@ -437,7 +437,7 @@ function _switchLang(l) {
   <div class="tab" data-panel="nouveautes" data-i18n="tab.nouv">Nouveautés</div>
   <div class="tab" data-panel="weblinks">🌐 Sites Web</div>
   <div class="tab" data-panel="crm">📋 CRM</div>
-  <div class="tab" data-panel="recherches">🔍 Recherches</div>
+  <div class="tab" data-panel="mchapsim">🤝 מחפשים</div>
 </div>
 
 <div class="panel active" id="search">
@@ -777,7 +777,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   t.classList.add('active');
   document.getElementById(t.dataset.panel).classList.add('active');
   if(t.dataset.panel==='crm')renderCRM();
-  if(t.dataset.panel==='recherches')renderRecherches();
+  if(t.dataset.panel==='mchapsim')renderRecherches();
 }));
 
 function getF() {
@@ -2931,7 +2931,7 @@ function renderRecherches() {
     <div class="crm-pipeline" id="crm-pipeline-board"></div>
   </div>
 </div>
-<div class="panel" id="recherches">
+<div class="panel" id="mchapsim">
   <div class="mandats-hdr">
     <div>
       <h2>🔍 Recherches agents — מחפשים</h2>
