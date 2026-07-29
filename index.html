@@ -817,7 +817,7 @@ function openDetail(id) {
   const villeCls = r.ville==='Tel Aviv'?'ville-tlv':r.ville==='Jerusalem'?'ville-jeru':r.ville==='Bat Yam'?'ville-by':r.ville==='Holon'?'ville-hol':r.ville==='Ramat Gan'?'ville-rg':r.ville==='Givatayim'?'ville-giv':r.ville==='Rishon LeZion'?'ville-rl':r.ville==='Kfar Saba'?'ville-ks':'ville-ra';
   const c = (r.telephone||'').replace(/[^\d+]/g,'');
   const waNum = c ? c.replace(/^0/,'972') : '';
-  const pm2cls = r.prix_m2_nis ? (r.prix_m2_nis>35000?'pm2 high':r.prix_m2_nis<20000?'pm2 low':'pm2') : '';
+  const _pm2v = r.prix_m2_nis || r.prix_m2; const pm2cls = _pm2v ? (_pm2v>35000?'pm2 high':_pm2v<20000?'pm2 low':'pm2') : '';
   const dsF = fmtDs(r.date_source);
   const noteLines = (r.note||'').split('\n').map(l => '<div>'+esc(l)+'</div>').join('');
   const baisseH = isBaisse(r) ? ' <span class="flag baisse">BAISSE</span>' : '';
@@ -833,12 +833,12 @@ function openDetail(id) {
     + '</div>'
     + '<div class="dm-grid">'
     + '<div class="dm-field"><div class="dm-label">Pièces</div><div class="dm-val">'+(r.pieces!=null?r.pieces:'—')+'</div></div>'
-    + '<div class="dm-field"><div class="dm-label">Surface bâtie</div><div class="dm-val">'+(r.surf_batie_m2?r.surf_batie_m2+'m²':'—')+'</div></div>'
-    + '<div class="dm-field"><div class="dm-label">Balcon/Jardin</div><div class="dm-val">'+(r.balcon_jardin_m2?r.balcon_jardin_m2+'m²':'—')+'</div></div>'
-    + '<div class="dm-field"><div class="dm-label">Surf. pondérée</div><div class="dm-val">'+(r.surf_ponderee_m2?r.surf_ponderee_m2+'m²':'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Surface bâtie</div><div class="dm-val">'+((r.surf_batie_m2||r.surf_batie)?(r.surf_batie_m2||r.surf_batie)+'m²':'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Balcon/Jardin</div><div class="dm-val">'+((r.balcon_jardin_m2||r.balcon)?(r.balcon_jardin_m2||r.balcon)+'m²':'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Surf. pondérée</div><div class="dm-val">'+((r.surf_ponderee_m2||r.surf_ponderee)?(r.surf_ponderee_m2||r.surf_ponderee)+'m²':'—')+'</div></div>'
     + '<div class="dm-field"><div class="dm-label">Étage</div><div class="dm-val">'+((r.etage!=null&&r.etage!=='')?String(r.etage):'—')+'</div></div>'
     + '<div class="dm-field dm-prix"><div class="dm-label">Prix</div><div class="dm-val">'+fmtPrice(r)+'</div></div>'
-    + '<div class="dm-field"><div class="dm-label">Prix/m²</div><div class="dm-val '+pm2cls+'">'+(r.prix_m2_nis?fmt(r.prix_m2_nis)+' ₪/m²':'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Prix/m²</div><div class="dm-val '+pm2cls+'">'+(_pm2v?fmt(_pm2v)+' ₪/m²':'—')+'</div></div>'
     + '</div>'
     + '<div class="dm-section">'
     + '<div class="dm-field"><div class="dm-label">Agent</div><div class="dm-val" style="font-size:13px;font-weight:500">'+esc(r.agent||'—')+'</div></div>'
@@ -911,9 +911,10 @@ function sortFiltered() {
 }
 function fmt(n) { return n == null ? '-' : n.toLocaleString('fr-FR'); }
 function fmtPrice(r) {
-  if (!r.prix_nis) return '-';
-  if (r.type === 'Location') return fmt(r.prix_nis) + ' ₪/mois';
-  return fmt(r.prix_nis) + ' ₪';
+  const p = r.prix_nis || r.prix;
+  if (!p) return '-';
+  if (r.type === 'Location') return fmt(p) + ' ₪/mois';
+  return fmt(p) + ' ₪';
 }
 function escapeHTML(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function adresseHTML(r) {
