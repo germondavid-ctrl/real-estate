@@ -40,6 +40,16 @@ body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin:0; pad
 .btn { padding:7px 14px; border:1px solid var(--border); background:white; border-radius:6px; cursor:pointer; font-size:13px; }
 .btn:hover { background:#f1f5f9; }
 .btn-primary { background:var(--primary); color:white; border-color:var(--primary); }
+.btn-archive { background:#fff7ed; color:#92400e; border-color:#fed7aa; }
+.btn-archive:hover { background:#ffedd5; }
+.btn-restore { background:#f0fdf4; color:#166534; border-color:#86efac; }
+.btn-restore:hover { background:#dcfce7; }
+.arch-btn { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid #fed7aa; background:#fff7ed; color:#92400e; white-space:nowrap; }
+.arch-btn:hover { background:#ffedd5; }
+.arch-btn.restore { border-color:#86efac; background:#f0fdf4; color:#166534; }
+.arch-btn.restore:hover { background:#dcfce7; }
+tr.archived-row td { opacity:0.45; }
+tr.archived-row { background:#fffbf5 !important; }
 table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; font-size:12.5px; }
 thead th { background:#f1f5f9; padding:10px 8px; text-align:left; font-weight:600; font-size:11.5px; color:#374151; cursor:pointer; user-select:none; border-bottom:1px solid var(--border); white-space:nowrap; }
 thead th:hover { background:#e2e8f0; }
@@ -484,6 +494,7 @@ function _switchLang(l) {
   <div class="actions">
     <button class="btn btn-primary" onclick="reset()" data-i18n="btn.reset">Réinitialiser</button>
     <button class="btn" onclick="exportCSV()" data-i18n="btn.csv">Exporter CSV</button>
+    <button class="btn btn-archive" id="btn-archives" onclick="toggleArchived()" style="display:none">🗄️ Archives (0)</button>
     <span class="count" id="count"></span>
   </div>
   <div id="result-bar">
@@ -659,6 +670,32 @@ const DATA = JSON.parse(document.getElementById('data').textContent);
 const records = DATA.records;
 let filtered = [...records];
 let sortKey = 'id', sortAsc = true;
+// ── Archives ─────────────────────────────────────────────────
+let archivedIds = new Set(JSON.parse(localStorage.getItem('archivedIds') || '[]'));
+let showArchived = false;
+function archiver(id) {
+  archivedIds.add(id);
+  localStorage.setItem('archivedIds', JSON.stringify([...archivedIds]));
+  updateArchiveBtn(); applyFilters();
+  const toast = document.getElementById('toast'); if(toast){toast.textContent='🗄️ Bien #'+id+' archivé'; toast.style.opacity=1; setTimeout(()=>toast.style.opacity=0,2200);}
+}
+function restaurer(id) {
+  archivedIds.delete(id);
+  localStorage.setItem('archivedIds', JSON.stringify([...archivedIds]));
+  updateArchiveBtn(); applyFilters();
+  const toast = document.getElementById('toast'); if(toast){toast.textContent='✅ Bien #'+id+' restauré'; toast.style.opacity=1; setTimeout(()=>toast.style.opacity=0,2200);}
+}
+function toggleArchived() {
+  showArchived = !showArchived; updateArchiveBtn(); applyFilters();
+}
+function updateArchiveBtn() {
+  const btn = document.getElementById('btn-archives');
+  if (!btn) return;
+  const n = archivedIds.size;
+  btn.textContent = showArchived ? '🗄️ Masquer archivés ('+n+')' : '🗄️ Archives ('+n+')';
+  btn.className = showArchived ? 'btn btn-restore' : 'btn btn-archive';
+  btn.style.display = n === 0 && !showArchived ? 'none' : '';
+}
 
 const quartiersByCity = { 'Tel Aviv': new Set(), 'Jerusalem': new Set(), "Ra'anana": new Set(), 'Ramat Gan': new Set(), 'Kfar Saba': new Set(), 'Bat Yam': new Set(), 'Holon': new Set(), 'Givatayim': new Set(), 'Rishon LeZion': new Set() };
 records.forEach(r => { if (r.quartier && quartiersByCity[r.ville]) quartiersByCity[r.ville].add(r.quartier); });
@@ -852,7 +889,12 @@ function openDetail(id) {
     + '<div class="dm-field"><div class="dm-label">Date d\'entrée</div><div class="dm-val" style="font-size:12px;font-weight:400">'+esc(r.date_entree||'—')+'</div></div>'
     + (r.source ? '<div class="dm-field"><div class="dm-label">Source</div><div class="dm-val" style="font-size:12px;font-weight:400">'+esc(r.source)+'</div></div>' : '')
     + '</div>'
-    + (r.note ? '<div class="dm-note"><div class="dm-label">Note</div><div class="dm-note-text">'+noteLines+'</div></div>' : '');
+    + (r.note ? '<div class="dm-note"><div class="dm-label">Note</div><div class="dm-note-text">'+noteLines+'</div></div>' : '')
+    + '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;gap:8px;">'
+    + (archivedIds.has(r.id)
+        ? '<button class="btn btn-restore" onclick="restaurer('+r.id+');closeDetail()">↩ Restaurer ce bien</button>'
+        : '<button class="btn btn-archive" onclick="archiver('+r.id+');closeDetail()">🗄️ Archiver ce bien</button>')
+    + '</div>';
   document.getElementById('detail-modal').style.display = 'flex';
 }
 function closeDetail() { document.getElementById('detail-modal').style.display = 'none'; }
@@ -893,6 +935,7 @@ function applyFilters() {
       const txt = normalizeSearch(r.adresse + ' ' + r.quartier + ' ' + r.agent + ' ' + r.telephone + ' ' + (r.caracteristiques || '') + ' ' + (r.note || '') + ' ' + (r.source || '') + ' ' + (r.groupe_wa || ''));
       if (!txt.includes(f.q)) return false;
     }
+    if (!showArchived && archivedIds.has(r.id)) return false;
     return true;
   });
   updateBar(); sortFiltered(); render(); try{renderKPIs();}catch(e){}
@@ -997,6 +1040,7 @@ function render() {
       '<td class="right pm2 ' + pm2Class(r.prix_m2_nis) + '">' + (r.prix_m2_nis ? fmt(r.prix_m2_nis) : '-') + flH + '</td>' +
       '<td onclick="event.stopPropagation()"><div class="agent">' + escapeHTML(r.agent||'') + '</div><div class="tel">' + escapeHTML(r.telephone||'') + '</div><div style="margin-top:4px">' + buildContactBtns(r) + '</div></td>' +
       '<td class="crm-cell" onclick="event.stopPropagation()">' + crmBadge(r.id) + '</td>' +
+      '<td onclick="event.stopPropagation()" style="text-align:center">' + (archivedIds.has(r.id) ? '<button class="arch-btn restore" onclick="restaurer('+r.id+')">↩ Restaurer</button>' : '<button class="arch-btn" onclick="archiver('+r.id+')">🗄️</button>') + '</td>' +
       '</tr>';
   }).join('');
   document.querySelectorAll('thead th').forEach(th => {
@@ -1606,6 +1650,7 @@ function renderAnalyse(city, quartier, btn) {
 }
 
 
+updateArchiveBtn();
 applyFilters();
 renderAgents();
 renderNouveautes();
