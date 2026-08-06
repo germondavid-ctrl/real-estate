@@ -870,9 +870,9 @@ function openDetail(id) {
     + '</div>'
     + '<div class="dm-grid">'
     + '<div class="dm-field"><div class="dm-label">Pièces</div><div class="dm-val">'+(r.pieces!=null?r.pieces:'—')+'</div></div>'
-    + '<div class="dm-field"><div class="dm-label">Surface bâtie</div><div class="dm-val">'+((r.surf_batie_m2||r.surf_batie)?(r.surf_batie_m2||r.surf_batie)+'m²':'—')+'</div></div>'
-    + '<div class="dm-field"><div class="dm-label">Balcon/Jardin</div><div class="dm-val">'+((r.balcon_jardin_m2||r.balcon)?(r.balcon_jardin_m2||r.balcon)+'m²':'—')+'</div></div>'
-    + '<div class="dm-field"><div class="dm-label">Surf. pondérée</div><div class="dm-val">'+((r.surf_ponderee_m2||r.surf_ponderee)?(r.surf_ponderee_m2||r.surf_ponderee)+'m²':'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Surface bâtie</div><div class="dm-val">'+((r.surf_batie_m2||r.surf_batie||r.surface)?(r.surf_batie_m2||r.surf_batie||r.surface)+'m²':'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Balcon/Jardin</div><div class="dm-val">'+((r.balcon_jardin_m2||r.balcon||r.balcon_m2)?(r.balcon_jardin_m2||r.balcon||r.balcon_m2)+'m²':'—')+'</div></div>'
+    + '<div class="dm-field"><div class="dm-label">Surf. pondérée</div><div class="dm-val">'+((r.surf_ponderee_m2||r.surf_ponderee||r.surface)?(r.surf_ponderee_m2||r.surf_ponderee||r.surface)+'m²':'—')+'</div></div>'
     + '<div class="dm-field"><div class="dm-label">Étage</div><div class="dm-val">'+((r.etage!=null&&r.etage!=='')?String(r.etage):'—')+'</div></div>'
     + '<div class="dm-field dm-prix"><div class="dm-label">Prix</div><div class="dm-val">'+fmtPrice(r)+'</div></div>'
     + '<div class="dm-field"><div class="dm-label">Prix/m²</div><div class="dm-val '+pm2cls+'">'+(_pm2v?fmt(_pm2v)+' ₪/m²':'—')+'</div></div>'
@@ -1235,7 +1235,7 @@ function renderNouveautes() {
   // Grouper par date
   const byDate = {};
   recs.forEach(r => {
-    const d = r.date_source || 'Date inconnue';
+    const d = r.date_entree || r.date_source || 'Date inconnue';
     (byDate[d] = byDate[d]||[]).push(r);
   });
 
