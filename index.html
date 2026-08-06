@@ -925,14 +925,14 @@ function applyFilters() {
     if (f.alert === 'new' && r.source !== 'collegote_26avril' && r.source !== 'VIP_Jeru_26_Avril.xlsx' && r.source !== 'message_WhatsApp_26avril_DanielLisaLevy') return false;
     if (f.alert === 'baisse') {
       const note = (r.note || '').toLowerCase();
-      const carac = (r.caracteristiques || '').toLowerCase();
+      const carac = cStr(r.caracteristiques).toLowerCase();
       if (!(note.includes('baisse') || note.includes('mà') || carac.includes('baisse'))) return false;
     }
     if (f.equip && f.equip.length) {
       for (const eq of f.equip) { if (!hasEquip(r, eq)) return false; }
     }
     if (f.q) {
-      const txt = normalizeSearch(r.adresse + ' ' + r.quartier + ' ' + r.agent + ' ' + r.telephone + ' ' + (r.caracteristiques || '') + ' ' + (r.note || '') + ' ' + (r.source || '') + ' ' + (r.groupe_wa || ''));
+      const txt = normalizeSearch(r.adresse + ' ' + r.quartier + ' ' + r.agent + ' ' + r.telephone + ' ' + cStr(r.caracteristiques) + ' ' + (r.note || '') + ' ' + (r.source || '') + ' ' + (r.groupe_wa || ''));
       if (!txt.includes(f.q)) return false;
     }
     if (showArchived) { if (!archivedIds.has(r.id)) return false; }
@@ -992,16 +992,16 @@ function isNewRecord(r) {
 }
 function isMamad(r) {
   if (r.has_mamad) return true;
-  const txt = ((r.adresse||'') + ' ' + (r.note||'') + ' ' + (r.caracteristiques||'')).toLowerCase();
+  const txt = ((r.adresse||'') + ' ' + (r.note||'') + ' ' + cStr(r.caracteristiques)).toLowerCase();
   return txt.includes('mamad');
 }
 function hasSeaView(r) {
   if (r.sea_view) return true;
-  const txt = ((r.adresse||'') + ' ' + (r.note||'') + ' ' + (r.caracteristiques||'')).toLowerCase();
+  const txt = ((r.adresse||'') + ' ' + (r.note||'') + ' ' + cStr(r.caracteristiques)).toLowerCase();
   return /vue[\s\-]?mer|nof[\s\-]?iam|נוף\s?ים|נוף\s?לים|sea[\s\-]?view|face[\s\-]?mer|ligne[\s\-]?mer|de la mer|הים| ים |ים מ/.test(txt);
 }
 function hasEquip(r, key) {
-  const t = ((r.adresse||'')+' '+(r.note||'')+' '+(r.caracteristiques||'')).toLowerCase();
+  const t = ((r.adresse||'')+' '+(r.note||'')+' '+cStr(r.caracteristiques)).toLowerCase();
   if (key==='ascenseur') return t.includes('ascenseur') && !t.includes('ss ascenseur') && !t.includes('sans ascenseur') && !/מ[\s\-]?עלית\s*[אין]/.test(t);
   if (key==='parking')   return t.includes('parking') || t.includes('חניה') || t.includes('חנייה');
   if (key==='balcon')    return (r.balcon_jardin_m2>0) || t.includes('balcon') || t.includes('מרפסת');
@@ -1009,9 +1009,12 @@ function hasEquip(r, key) {
   if (key==='mamad')     return isMamad(r) || !!r.has_mamad || t.includes('mamad') || t.includes('ממ"ד');
   return false;
 }
+
+// Helper: caracteristiques peut être tableau ou chaîne
+function cStr(c) { return Array.isArray(c) ? c.join(' ') : (c || ''); }
 function isBaisse(r) {
   const note = (r.note || '').toLowerCase();
-  const carac = (r.caracteristiques || '').toLowerCase();
+  const carac = cStr(r.caracteristiques).toLowerCase();
   return note.includes('baisse') || note.includes('mà') || carac.includes('baisse');
 }
 // Stub crmBadge — remplacé par l'implémentation réelle dans bloc CRM
