@@ -437,7 +437,7 @@ function _switchLang(l) {
     <button class="lang-btn active" id="btn-fr" onclick="_switchLang('fr')">FR</button>
     <button class="lang-btn" id="btn-he" onclick="_switchLang('he')">עב</button>
   </div>
-  <div class="sub">2259 biens · MAJ 27/07/2026</div>
+  <div class="sub">2524 biens · MAJ 10/08/2026</div>
 </div>
 <div class="tabs">
   <div class="tab active" data-panel="search" data-i18n="tab.search">Recherche</div>
@@ -821,6 +821,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   document.getElementById(t.dataset.panel).classList.add('active');
   if(t.dataset.panel==='crm')renderCRM();
   if(t.dataset.panel==='mchapsim')renderRecherches();
+  if(t.dataset.panel==='agents')renderAgents();
 }));
 
 function getF() {
