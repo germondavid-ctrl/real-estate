@@ -304,6 +304,16 @@ tr.crm-highlight{background:#eff6ff !important}
 #crm-form-title{font-weight:700;font-size:14px;margin:0 0 14px;color:var(--text)}
 .crm-fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .crm-ff{display:flex;flex-direction:column;gap:4px}
+.crm-q-wrap{display:flex;flex-direction:column;gap:6px}
+.crm-q-row{display:flex;gap:6px;align-items:center}
+.crm-q-vsel{flex:0 0 130px;font-size:13px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card)}
+.crm-q-qsel{flex:1;font-size:13px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card)}
+.crm-q-btn{padding:6px 12px;background:var(--primary);color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap}
+.crm-q-btn:hover{background:#1e40af}
+.crm-q-tags{display:flex;flex-wrap:wrap;gap:5px;min-height:28px;padding:2px 0}
+.crm-q-tag{display:inline-flex;align-items:center;gap:4px;background:#e0e7ff;color:#3730a3;border-radius:12px;padding:3px 10px;font-size:12.5px;font-weight:500}
+.crm-q-tag button{background:none;border:none;cursor:pointer;font-size:15px;color:#6366f1;line-height:1;padding:0 2px}
+.crm-q-tag button:hover{color:#dc2626}
 .crm-ff.full{grid-column:1/-1}
 .crm-ff label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px}
 .crm-ff input,.crm-ff textarea{padding:6px 9px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit}
@@ -2373,7 +2383,51 @@ function showAddClientForm(id){
   document.getElementById('ceq-securise').checked=_equip.indexOf('securise')>-1;
   document.getElementById('ceq-vue_ville').checked=_equip.indexOf('vue_ville')>-1;
   form.scrollIntoView({behavior:'smooth'});
+  crmQLoad();
+}
+function crmQBuild(){
+  var ville=document.getElementById('cf-q-ville').value;
+  var seen={},qs=[];
+  records.forEach(function(r){
+    var q=String(r.quartier||'').trim();
+    if(!q||q==='—')return;
+    if(ville&&r.ville!==ville)return;
+    if(!seen[q]){seen[q]=1;qs.push(q);}
+  });
+  qs.sort(function(a,b){return a.localeCompare(b,'he');});
+  var sel=document.getElementById('cf-q-sel');
+  sel.innerHTML='<option value="">— choisir quartier —</option>'+qs.map(function(q){
+    return '<option value="'+q.replace(/"/g,'&quot;')+'">'+q+'</option>';
+  }).join('');
+}
+function crmQAdd(){
+  var q=document.getElementById('cf-q-sel').value;
+  if(!q)return;
+  var list=(document.getElementById('cf-quartiers').value||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+  if(list.indexOf(q)>-1)return;
+  list.push(q);
+  crmQSync(list);
+  document.getElementById('cf-q-sel').value='';
+}
+function crmQRemove(q){
+  var list=(document.getElementById('cf-quartiers').value||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+  list=list.filter(function(x){return x!==q;});
+  crmQSync(list);
+}
+function crmQSync(list){
+  document.getElementById('cf-quartiers').value=list.join(', ');
+  document.getElementById('cf-q-tags').innerHTML=list.map(function(q){
+    var safe=q.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    var esc=q.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return '<span class="crm-q-tag">'+safe+'<button type="button" onclick="crmQRemove(\''+esc+'\')">&times;</button></span>';
+  }).join('');
   liveMatchPreview();
+}
+function crmQLoad(){
+  var val=document.getElementById('cf-quartiers').value;
+  var list=val?val.split(',').map(function(x){return x.trim();}).filter(Boolean):[];
+  crmQSync(list);
+  crmQBuild();
 }
 function hideAddClientForm(){
   document.getElementById('crm-add-form').classList.remove('open');
@@ -2926,7 +2980,28 @@ function renderRecherches() {
         <div class="crm-ff"><label>Budget max (₪)</label><input id="cf-bmax" type="number" oninput="liveMatchPreview()" placeholder="ex: 6000000"></div>
         <div class="crm-ff"><label>Pièces min</label><input id="cf-pmin" type="number" oninput="liveMatchPreview()" step="0.5" placeholder="ex: 3"></div>
         <div class="crm-ff"><label>Pièces max</label><input id="cf-pmax" type="number" oninput="liveMatchPreview()" step="0.5" placeholder="ex: 5"></div>
-        <div class="crm-ff full"><label>Quartiers recherchés</label><input id="cf-quartiers" type="text" oninput="liveMatchPreview()" placeholder="ex: Neve Tsedek, Florentin (séparés par virgule)"></div>
+        <div class="crm-ff full"><label>Quartiers recherchés</label>
+          <input id="cf-quartiers" type="hidden">
+          <div class="crm-q-wrap">
+            <div class="crm-q-row">
+              <select id="cf-q-ville" onchange="crmQBuild()" class="crm-q-vsel">
+                <option value="">Toutes villes</option>
+                <option value="Tel Aviv">Tel Aviv</option>
+                <option value="Jerusalem">Jérusalem</option>
+                <option value="Ra'anana">Ra'anana</option>
+                <option value="Ramat Gan">Ramat Gan</option>
+                <option value="Kfar Saba">Kfar Saba</option>
+                <option value="Bat Yam">Bat Yam</option>
+                <option value="Holon">Holon</option>
+                <option value="Givatayim">Givatayim</option>
+                <option value="Rishon LeZion">Rishon LeZion</option>
+              </select>
+              <select id="cf-q-sel" class="crm-q-qsel"><option value="">— choisir quartier —</option></select>
+              <button type="button" class="crm-q-btn" onclick="crmQAdd()">＋ Ajouter</button>
+            </div>
+            <div id="cf-q-tags" class="crm-q-tags"></div>
+          </div>
+        </div>
         <div class="crm-prox-row crm-ff full">
           <div class="crm-ff" style="flex:2">
             <label>📍 Recherche par proximité (adresse / rue de référence)</label>
