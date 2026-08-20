@@ -1304,8 +1304,8 @@ function renderAgents() {
   // Grouper par agent + téléphone
   const map = {};
   records.forEach(r => {
-    const nm = (r.agent     || '').trim();
-    const tl = (r.telephone || '').trim();
+    const nm = String(r.agent     ?? '').trim();
+    const tl = String(r.telephone ?? '').trim();
     if (!nm && !tl) return;
     if (ville && r.ville !== ville) return;
     const key = nm + '§' + tl;
