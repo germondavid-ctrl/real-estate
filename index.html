@@ -509,16 +509,11 @@ function _switchLang(l) {
     <div class="f-group"><label data-i18n="lbl.alertes">Alertes</label>
       <select id="f-alert"><option value="">Aucune</option><option value="under">Sous-évalués (-25% médiane)</option><option value="over">Sur-évalués (+25%)</option><option value="new">Nouveaux (26/04)</option><option value="baisse">Baisses de prix</option></select>
     </div>
-    <div class="f-group"><label>Étage max</label>
-      <select id="f-etage">
-        <option value="">Tous</option>
-        <option value="0">RDC (0)</option>
-        <option value="1">≤ 1</option>
-        <option value="2">≤ 2</option>
-        <option value="3">≤ 3</option>
-        <option value="5">≤ 5</option>
-        <option value="10">≤ 10</option>
-      </select>
+    <div class="f-group"><label>Étage</label>
+      <div class="multi-sel" id="f-etage-wrap">
+        <div class="multi-sel-btn" id="f-etage-btn" onclick="toggleEtageDD()"><span id="f-etage-label">Tous</span> ▾</div>
+        <div class="multi-sel-dd" id="f-etage-dd"></div>
+      </div>
     </div>
   </div>
   <div class="actions">
@@ -826,6 +821,34 @@ document.addEventListener('click', e => {
   }
 });
 
+let selectedEtages = new Set();
+const etageNums = new Set();
+records.forEach(r => { const n = parseEtage(r.etage); if (n !== null) etageNums.add(n); });
+const etageDD = document.getElementById('f-etage-dd');
+[...etageNums].sort((a,b) => a-b).forEach(n => {
+  const lbl = document.createElement('label');
+  lbl.className = 'multi-sel-item';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.value = n;
+  cb.addEventListener('change', () => {
+    if (cb.checked) selectedEtages.add(n); else selectedEtages.delete(n);
+    const sel = [...selectedEtages].sort((a,b)=>a-b).map(v => v === 0 ? 'RDC' : v);
+    document.getElementById('f-etage-label').textContent = sel.length ? sel.join(', ') : 'Tous';
+    applyFilters();
+  });
+  lbl.appendChild(cb);
+  lbl.appendChild(document.createTextNode(' ' + (n === 0 ? 'RDC (0)' : n)));
+  etageDD.appendChild(lbl);
+});
+function toggleEtageDD() {
+  const dd = document.getElementById('f-etage-dd');
+  dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+}
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('f-etage-wrap');
+  if (wrap && !wrap.contains(e.target)) document.getElementById('f-etage-dd').style.display = 'none';
+});
+
 const byQ = {};
 records.filter(r => r.type === 'Vente' && r.prix_m2_nis).forEach(r => {
   const k = r.ville + '|' + r.quartier;
@@ -870,12 +893,12 @@ function getF() {
     smax: +document.getElementById('f-smax').value || null,
     alert: document.getElementById('f-alert').value,
     equip: [...selectedEquips],
-    etage_max: document.getElementById('f-etage').value !== '' ? +document.getElementById('f-etage').value : null,
+    etages: [...selectedEtages],
   };
 }
 function parseEtage(val) {
   if (val === null || val === undefined || val === '') return null;
-  var s = String(val).trim().replace(/קומה\s*/,'').replace(/קרקע/,'0').split('/')[0].trim();
+  var s = String(val).trim().replace(/קומה\s*/i,'').replace(/קרקע/,'0').split('/')[0].trim();
   var n = parseFloat(s);
   return isNaN(n) ? null : n;
 }
@@ -970,9 +993,9 @@ function applyFilters() {
     if (f.equip && f.equip.length) {
       for (const eq of f.equip) { if (!hasEquip(r, eq)) return false; }
     }
-    if (f.etage_max !== null) {
+    if (f.etages && f.etages.length) {
       const en = parseEtage(r.etage);
-      if (en !== null && en > f.etage_max) return false;
+      if (en === null || !f.etages.includes(en)) return false;
     }
     if (f.q) {
       const txt = normalizeSearch(r.adresse + ' ' + r.quartier + ' ' + r.agent + ' ' + r.telephone + ' ' + cStr(r.caracteristiques) + ' ' + (r.note || '') + ' ' + (r.source || '') + ' ' + (r.groupe_wa || ''));
@@ -1157,6 +1180,9 @@ function reset() {
   selectedEquips = new Set();
   document.getElementById('f-equip-label').textContent = 'Tous';
   document.querySelectorAll('#f-equip-dd input[type=checkbox]').forEach(cb => cb.checked = false);
+  selectedEtages = new Set();
+  document.getElementById('f-etage-label').textContent = 'Tous';
+  document.querySelectorAll('#f-etage-dd input[type=checkbox]').forEach(cb => cb.checked = false);
   applyFilters();
 }
 document.getElementById('f-ville').addEventListener('change', () => { rebuildQuartierSelect(); applyFilters(); });
