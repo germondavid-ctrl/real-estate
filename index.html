@@ -509,6 +509,17 @@ function _switchLang(l) {
     <div class="f-group"><label data-i18n="lbl.alertes">Alertes</label>
       <select id="f-alert"><option value="">Aucune</option><option value="under">Sous-évalués (-25% médiane)</option><option value="over">Sur-évalués (+25%)</option><option value="new">Nouveaux (26/04)</option><option value="baisse">Baisses de prix</option></select>
     </div>
+    <div class="f-group"><label>Étage max</label>
+      <select id="f-etage">
+        <option value="">Tous</option>
+        <option value="0">RDC (0)</option>
+        <option value="1">≤ 1</option>
+        <option value="2">≤ 2</option>
+        <option value="3">≤ 3</option>
+        <option value="5">≤ 5</option>
+        <option value="10">≤ 10</option>
+      </select>
+    </div>
   </div>
   <div class="actions">
     <button class="btn btn-primary" onclick="reset()" data-i18n="btn.reset">Réinitialiser</button>
@@ -859,7 +870,14 @@ function getF() {
     smax: +document.getElementById('f-smax').value || null,
     alert: document.getElementById('f-alert').value,
     equip: [...selectedEquips],
+    etage_max: document.getElementById('f-etage').value !== '' ? +document.getElementById('f-etage').value : null,
   };
+}
+function parseEtage(val) {
+  if (val === null || val === undefined || val === '') return null;
+  var s = String(val).trim().replace(/קומה\s*/,'').replace(/קרקע/,'0').split('/')[0].trim();
+  var n = parseFloat(s);
+  return isNaN(n) ? null : n;
 }
 
 // ── FICHE DÉTAIL ────────────────────────────────────────────────────────
@@ -951,6 +969,10 @@ function applyFilters() {
     }
     if (f.equip && f.equip.length) {
       for (const eq of f.equip) { if (!hasEquip(r, eq)) return false; }
+    }
+    if (f.etage_max !== null) {
+      const en = parseEtage(r.etage);
+      if (en !== null && en > f.etage_max) return false;
     }
     if (f.q) {
       const txt = normalizeSearch(r.adresse + ' ' + r.quartier + ' ' + r.agent + ' ' + r.telephone + ' ' + cStr(r.caracteristiques) + ' ' + (r.note || '') + ' ' + (r.source || '') + ' ' + (r.groupe_wa || ''));
@@ -1179,7 +1201,7 @@ document.querySelectorAll('thead th').forEach(th => th.addEventListener('click',
   else { sortKey = th.dataset.k; sortAsc = true; }
   sortFiltered(); render();
 }));
-['q','f-type','f-pmin','f-pmax','f-m2min','f-m2max','f-smin','f-smax','f-alert'].forEach(id => {
+['q','f-type','f-pmin','f-pmax','f-m2min','f-m2max','f-smin','f-smax','f-alert','f-etage'].forEach(id => {
   const el = document.getElementById(id);
   el.addEventListener('input', applyFilters);
   el.addEventListener('change', applyFilters);
