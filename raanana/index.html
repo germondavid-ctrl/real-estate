@@ -980,8 +980,9 @@ function applyFilters() {
     if (f.pmax && (r.prix_nis ?? Infinity) > f.pmax) return false;
     if (f.m2min && (r.prix_m2_nis ?? 0) < f.m2min) return false;
     if (f.m2max && (r.prix_m2_nis ?? Infinity) > f.m2max) return false;
-    if (f.smin && (r.surf_batie_m2 ?? 0) < f.smin) return false;
-    if (f.smax && (r.surf_batie_m2 ?? Infinity) > f.smax) return false;
+    const _surf = r.surf_ponderee_m2 ?? r.surf_batie_m2;
+    if (f.smin && (_surf ?? 0) < f.smin) return false;
+    if (f.smax && (_surf ?? Infinity) > f.smax) return false;
     if (f.alert === 'under' && alertFlag(r) !== 'under') return false;
     if (f.alert === 'over' && alertFlag(r) !== 'over') return false;
     if (f.alert === 'new' && r.source !== 'collegote_26avril' && r.source !== 'VIP_Jeru_26_Avril.xlsx' && r.source !== 'message_WhatsApp_26avril_DanielLisaLevy') return false;
@@ -1104,7 +1105,7 @@ function render() {
       '<td class="adresse">' + adresseHTML(r) + (r.date_source && r.date_source.match(/\d/) ? '<div class="date-src">📅 ' + escapeHTML(r.date_source) + '</div>' : '') + '</td>' +
       '<td><span class="q">' + escapeHTML(r.quartier||'-') + '</span></td>' +
       '<td class="center">' + escapeHTML(String(r.pieces ?? '-')) + '</td>' +
-      '<td class="right">' + (r.surf_batie_m2 ? r.surf_batie_m2 + 'm²' : '-') + '</td>' +
+      '<td class="right">' + ((r.surf_ponderee_m2 ?? r.surf_batie_m2) ? (r.surf_ponderee_m2 ?? r.surf_batie_m2) + 'm²' : '-') + '</td>' +
       '<td class="center">' + escapeHTML(r.etage != null && r.etage !== '' ? String(r.etage) : '-') + '</td>' +
       '<td class="right price">' + fmtPrice(r) + '</td>' +
       '<td class="right pm2 ' + pm2Class(r.prix_m2_nis) + '">' + (r.prix_m2_nis ? fmt(r.prix_m2_nis) : '-') + flH + '</td>' +
@@ -1227,10 +1228,12 @@ document.querySelectorAll('thead th').forEach(th => th.addEventListener('click',
   else { sortKey = th.dataset.k; sortAsc = true; }
   sortFiltered(); render();
 }));
-['q','f-type','f-pmin','f-pmax','f-m2min','f-m2max','f-smin','f-smax','f-alert','f-etage'].forEach(id => {
+['q','f-type','f-pmin','f-pmax','f-m2min','f-m2max','f-smin','f-smax','f-alert'].forEach(id => {
   const el = document.getElementById(id);
-  el.addEventListener('input', applyFilters);
-  el.addEventListener('change', applyFilters);
+  if (el) {
+    el.addEventListener('input', applyFilters);
+    el.addEventListener('change', applyFilters);
+  }
 });
 
 
